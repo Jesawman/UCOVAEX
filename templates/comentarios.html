@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Proyecto Final</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Proyecto Final</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Asignatura UCO</th>
+                            <th>Asignatura Extranjero</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Comentarios</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for solicitud in solicitudes %}
+                            <tr>
+                                <td>{{ solicitud['apellidos_y_nombre_alumno'] }}</td>
+                                <td>{{ get_nombre_asignatura_uco(solicitud['codigo_asignatura_uco']) }}</td>
+                                <td>{{ get_nombre_asignatura_exterior(solicitud['codigo_asignatura_extranjero']) }}</td>
+                                <td>{{ solicitud['fecha_solicitud'] }}</td>
+                                <td>{{ solicitud['estado'] }}</td>
+                                <td>
+                                    <form action="" method="post">
+                                        <input type="hidden" name="_id" value="{{ solicitud['_id'] }}">
+                                        <textarea name="comentarios" id="comentarios" cols="30" rows="10" class="form-control">{{ solicitud['comentarios'] }}</textarea>
+                                        <input type="submit" value="Guardar" class="btn btn-primary">
+                                    </form>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('comentarios', id=solicitud['_id']) }}" class="btn btn-primary"><i class="fas fa-edit"></i></a>
+                                    <a href="{{ url_for('comentarios', id=solicitud['_id']) }}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

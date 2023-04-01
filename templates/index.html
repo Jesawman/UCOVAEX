@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>UCO Validación de Asignaturas</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      header {
+        background-color: #221C35;
+        color: #FFFFFF;
+        padding: 10px;
+        text-align: center;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        border-bottom: 1px solid #000000;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: 50px;
+      }
+
+      header img {
+        width: auto;
+        height: auto;
+        max-height: 50px;
+        margin-right: 10px;
+      }
+
+      header .button {
+        background-color: #221C35;
+        color: #FFFFFF;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-right: 65px;
+
+      }
+      img {
+        display: block;
+        margin: 0 auto;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      p {
+        font-size: 24px;
+        color: #666666;
+        margin-top: 0;
+        margin-bottom: 50px;
+        line-height: 1.5;
+        text-align: center;
+      }
+      .button {
+        display: inline-block;
+        background-color: #225d9c;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-size: 18px;
+        font-weight: bold;
+        text-decoration: none;
+        margin-right: 20px;
+        margin-bottom: 20px;
+      }
+      .button:hover {
+        background-color: #12395f;
+      }
+      .login-button {
+        background-color: #00a6a6;
+        margin-right: 0;
+      }
+      .login-button:hover {
+        background-color: #008f8f;
+      }
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f2f2f2;
+      }
+      h1 {
+        margin-top: 80px;
+      }
+      h2 {
+        font-size: 36px;
+        font-weight: 500;
+        color: #333333;
+        margin-top: 50px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      h3 {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin-bottom: 1em;
+      }
+      .card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 40px;
+      }
+      .card img {
+        border-radius: 10px;
+        margin-bottom: 20px;
+        max-width: 100%;
+      }
+      .card h3 {
+        font-size: 24px;
+        font-weight: 500;
+        color: #333333;
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+      .card p {
+        font-size: 18px;
+        color: #666666;
+        margin-top: 0;
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .card-button {
+        background-color: #00a6a6;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        margin-top: 20px;
+        display: inline-block;
+      }
+      .card-button:hover {
+        background-color: #008f8f;
+      }
+      .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
+      <h1 style="margin: 0;">UCOVAEX</h1>
+      <div style="flex-grow: 1;"></div>
+      <a href="{{ url_for('login') }}" class="button" style="font-size: 14px;">Iniciar sesión</a>
+      <a href="{{ url_for('register') }}" class="button" style="font-size: 14px;">Registrarse</a>
+    </header>
+    <main>
+      <section class="container">
+        <h1>Bienvenidos a UCO Validación de Asignaturas</h1>
+        <p>Valida las asignaturas que has cursado en el extranjero para poder usarlas en tu expediente académico</p>
+        </section>
+        <section class="features">
+        <div class="container">
+        <h2 class="section-title">¿Qué puedes hacer con UCO Validación de Asignaturas?</h2>
+        <div class="feature-item">
+        <img src="https://via.placeholder.com/200x200" alt="Feature Icon">
+        <h3 class="feature-title">Validar tus asignaturas</h3>
+        <p class="feature-description">Con UCO Validación de Asignaturas podrás validar las asignaturas que has cursado en el extranjero para usarlas en tu expediente académico.</p>
+        </div>
+        <div class="feature-item">
+        <img src="https://via.placeholder.com/200x200" alt="Feature Icon">
+        <h3 class="feature-title">Solicitar créditos ECTS</h3>
+        <p class="feature-description">Solicita créditos ECTS por las asignaturas que hayas validado para que se incluyan en tu expediente académico.</p>
+        </div>
+        <div class="feature-item">
+        <img src="https://via.placeholder.com/200x200" alt="Feature Icon">
+        <h3 class="feature-title">Acceder a tu expediente académico</h3>
+        <p class="feature-description">Una vez hayas validado tus asignaturas, podrás acceder a tu expediente académico en línea para ver las asignaturas que has cursado y los créditos obtenidos.</p>
+        </div>
+        </div>
+        </section>
+        <section class="call-to-action">
+        <div class="container">
+        <h2 class="section-title">¿Quieres validar tus asignaturas?</h2>
+        <p class="section-description">Regístrate en UCO Validación de Asignaturas para empezar a validar tus asignaturas y obtener créditos ECTS.</p>
+        <center><a href="{{ url_for('register') }}" class="button cta-button">Registrarse</a></center>
+        </div>
+        </section>
+        <footer>
+        <div class="container">
+        <p>© 2023 UCO Validación de Asignaturas</p>
+        </div>
+        </footer>
+        </main>
+        
+          </body>
+        </html>
