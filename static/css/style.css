@@ -139,3 +139,17 @@
         flex-wrap: wrap;
         justify-content: center;
       }
+
+      .centrar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f7f7f7;
+        }
+        
+        .enmarcar {
+        background-color: white;
+        border-radius: 10px;
+        padding: 30px;
+        }
