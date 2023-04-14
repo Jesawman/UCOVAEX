@@ -1,0 +1,21 @@
+{
+    "builds": [
+      {
+        "src": "app.py",
+        "use": "@now/python"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "/app.py"
+      }
+    ],
+    "env": {
+      "MONGO_URI": "mongodb://localhost:27017/app",
+      "SECRET_KEY": "secretkey",
+      "MONGO_DBNAME": "app",
+      "PORT": "5000"
+    }
+  }
+  
