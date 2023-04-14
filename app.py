@@ -56,6 +56,13 @@ def login():
             return redirect(url_for('login'))
     return render_template('login.html')
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Sesión cerrada.')
+    return redirect(url_for('index.html'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -130,12 +137,6 @@ def administracion():
         flash('Solicitud actualizada')
         return redirect(url_for('administracion'))
     return render_template('administracion.html', solicitudes=mongo.db.solicitudes.find())
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
