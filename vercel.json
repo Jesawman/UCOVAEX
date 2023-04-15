@@ -1,4 +1,9 @@
 {
+    "builds": [
+      {
+        "src": "app.py",
+      }
+    ],
       "routes": [
       { "src": "/administracion", "dest": "/administracion.html" },
       { "src": "/comentarios", "dest": "/comentarios.html" },
