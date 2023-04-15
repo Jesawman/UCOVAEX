@@ -15,7 +15,7 @@
       { "src": "/solicitud", "dest": "/solicitud.html" }
     ],
     "env": {
-      "MONGO_URI": "mongodb://localhost:27017/app",
+      "MONGO_URI": "mongodb+srv://jaeh:4_WgiEXiaHvb4Vy@cluster0.fgknz.mongodb.net/test",
       "SECRET_KEY": "secretkey",
       "MONGO_DBNAME": "app",
       "PORT": "5000"
