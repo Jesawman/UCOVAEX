@@ -5,11 +5,13 @@
         "use": "@now/python"
       }
     ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "/app.py"
-      }
+      "routes": [
+      { "src": "/administracion", "dest": "/administracion.html" },
+      { "src": "/comentarios", "dest": "/comentarios.html" },
+      { "src": "/", "dest": "/index.html" },
+      { "src": "/login", "dest": "/login.html" },
+      { "src": "/register", "dest": "/register.html" },
+      { "src": "/solicitud", "dest": "/solicitud.html" }
     ],
     "env": {
       "MONGO_URI": "mongodb://localhost:27017/app",
