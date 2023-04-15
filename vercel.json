@@ -7,12 +7,12 @@
     ],
       "routes": [
       { "src": "/(.*)", "dest": "app.py" },
-      { "src": "/administracion", "dest": "/administracion.html" },
-      { "src": "/comentarios", "dest": "/comentarios.html" },
-      { "src": "/", "dest": "/index.html" },
-      { "src": "/login", "dest": "/login.html" },
-      { "src": "/register", "dest": "/register.html" },
-      { "src": "/solicitud", "dest": "/solicitud.html" }
+      { "src": "/administracion", "dest": "/templates/administracion.html" },
+      { "src": "/comentarios", "dest": "/templates/comentarios.html" },
+      { "src": "/", "dest": "/templates/index.html" },
+      { "src": "/login", "dest": "/templates/login.html" },
+      { "src": "/register", "dest": "/templates/register.html" },
+      { "src": "/solicitud", "dest": "/templates/solicitud.html" }
     ],
     "env": {
       "MONGO_URI": "mongodb+srv://jaeh:4_WgiEXiaHvb4Vy@cluster0.fgknz.mongodb.net/test",
