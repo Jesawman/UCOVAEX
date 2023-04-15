@@ -6,6 +6,7 @@
       }
     ],
       "routes": [
+      { "src": "/(.*)", "dest": "app.py" },
       { "src": "/administracion", "dest": "/administracion.html" },
       { "src": "/comentarios", "dest": "/comentarios.html" },
       { "src": "/", "dest": "/index.html" },
