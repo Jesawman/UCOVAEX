@@ -8,7 +8,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 app = Flask(__name__)
 
 app.config['MONGO_DBNAME'] = 'app'
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/app'
+app.config['MONGO_URI'] = 'mongodb+srv://jaeh:4_WgiEXiaHvb4Vy@cluster0.fgknz.mongodb.net/test'
 app.config['SECRET_KEY'] = 'secretkey'
 
 mongo = PyMongo(app)
@@ -55,6 +55,13 @@ def login():
             flash('Usuario no encontrado')
             return redirect(url_for('login'))
     return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Sesión cerrada.')
+    return redirect(url_for('index.html'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
