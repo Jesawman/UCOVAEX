@@ -138,6 +138,18 @@ def administracion():
         return redirect(url_for('administracion'))
     return render_template('administracion.html', solicitudes=mongo.db.solicitudes.find())
 
+@app.route('/agregar_asignatura_uco', methods=['POST'])
+def agregar_asignatura_uco():
+    codigo = request.form['codigo']
+    nombre = request.form['nombre']
+    ects = int(request.form['ects'])
+    mongo.db.asignaturas_uco.insert_one({
+        'codigo_asignatura_uco': codigo,
+        'nombre_uco': nombre,
+        'ects_uco': ects
+    })
+    return 'Datos agregados a la tabla app.asignaturas_uco'
+
 if __name__ == '__main__':
     app.run()
 
