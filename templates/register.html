@@ -8,73 +8,6 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #F6F7FB;
-            color: #3D3D3D;
-        }    .container {
-        max-width: 500px;
-        margin: 0 auto;
-        padding: 30px;
-        background-color: #FFFFFF;
-        border-radius: 10px;
-        box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    h1 {
-        margin-top: 0;
-    }
-
-    form {
-        display: inline-block;
-        text-align: left;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 5px;
-        text-align: left;
-        font-size: 14px;
-    }
-
-    input[type="text"],
-    input[type="password"] {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
-        border: none;
-        background-color: #F3F3F3;
-        border-radius: 5px;
-        font-size: 14px;
-        color: #3D3D3D;
-    }
-
-    input[type="submit"] {
-        background-color: #12395F;
-        color: #FFFFFF;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
-    input[type="submit"]:hover {
-        background-color: #0E2D45;
-    }
-
-    .error-message {
-        color: red;
-        margin-bottom: 10px;
-        font-size: 14px;
-    }
-
-    .red {
-        color: red;
-    }
-</style>
 </head>
 <body>
 <header>
@@ -84,11 +17,16 @@
         <a href="{{ url_for('login') }}" class="button" style="font-size: 14px;">Iniciar sesión</a>
         <a href="{{ url_for('register') }}" class="button" style="font-size: 14px;">Registrarse</a>
     </header>
+   <body>
     <div class="container">
         <div class="row">
             <div class="col-md-12">
+                <h1>Registro</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
                 <form action="" method="post">
-                    <p style="margin-top: 50px;">Registrate.</p>
                     <div class="form-group">
                         <label for="username">Nombre de usuario</label>
                         <input type="text" name="username" id="username" class="form-control">

@@ -8,7 +8,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 app = Flask(__name__)
 
 app.config['MONGO_DBNAME'] = 'app'
-app.config['MONGO_URI'] = 'mongodb+srv://jaeh:4_WgiEXiaHvb4Vy@cluster0.fgknz.mongodb.net/test'
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/app'
 app.config['SECRET_KEY'] = 'secretkey'
 
 mongo = PyMongo(app)
@@ -55,13 +55,6 @@ def login():
             flash('Usuario no encontrado')
             return redirect(url_for('login'))
     return render_template('login.html')
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash('Sesión cerrada.')
-    return redirect(url_for('index.html'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -138,18 +131,11 @@ def administracion():
         return redirect(url_for('administracion'))
     return render_template('administracion.html', solicitudes=mongo.db.solicitudes.find())
 
-@app.route('/agregar_asignatura_uco', methods=['POST'])
-def agregar_asignatura_uco():
-    codigo = request.form['codigo']
-    nombre = request.form['nombre']
-    ects = int(request.form['ects'])
-    mongo.db.asignaturas_uco.insert_one({
-        'codigo_asignatura_uco': codigo,
-        'nombre_uco': nombre,
-        'ects_uco': ects
-    })
-    return 'Datos agregados a la tabla app.asignaturas_uco'
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run()
-
+    app.run(debug=True, port=5000)
