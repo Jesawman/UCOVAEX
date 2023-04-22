@@ -2,7 +2,7 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, flash
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import threading
 
 app = Flask(__name__)
@@ -102,25 +102,27 @@ def register():
 @login_required
 def solicitud():
     if request.method == 'POST':
-        with sqlite3.connect('database.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO solicitudes(apellidos_y_nombre_alumno, codigo_asignatura_uco, codigo_asignatura_extranjero, codigo_solicitud, fecha_solicitud) VALUES (?, ?, ?, ?, ?)", (request.form['nombre'], request.form['asignatura_uco'], request.form['asignatura_extranjero'], cursor.execute('SELECT COUNT(*) FROM solicitudes').fetchone()[0] + 1, datetime.datetime.now()))
+        with get_db as conn:
+            c = conn.c()
+            c.execute("INSERT INTO solicitudes(apellidos_y_nombre_alumno, codigo_asignatura_uco, codigo_asignatura_extranjero, codigo_solicitud, fecha_solicitud) VALUES (?, ?, ?, ?, ?)", (request.form['nombre'], request.form['asignatura_uco'], request.form['asignatura_extranjero'], cursor.execute('SELECT COUNT(*) FROM solicitudes').fetchone()[0] + 1, datetime.datetime.now()))
             conn.commit()
+            conn.close()
             flash('Solicitud enviada')
             return redirect(url_for('solicitud'))
-    with sqlite3.connect('database.db') as conn:
-        cursor = conn.cursor()
-        solicitudes = cursor.execute("SELECT * FROM solicitudes WHERE apellidos_y_nombre_alumno = ?", (current_user.get_id(),)).fetchall()
-        asignaturas_uco = cursor.execute("SELECT * FROM asignaturas_uco").fetchall()
-        asignaturas_exterior = cursor.execute("SELECT * FROM asignaturas_exterior").fetchall()
+    with get_db as conn:
+        c = conn.c()
+        solicitudes = c.execute("SELECT * FROM solicitudes WHERE apellidos_y_nombre_alumno = ?", (current_user.get_id(),)).fetchall()
+        asignaturas_uco = c.execute("SELECT * FROM asignaturas_uco").fetchall()
+        asignaturas_exterior = c.execute("SELECT * FROM asignaturas_exterior").fetchall()
+        conn.close()
     return render_template('solicitud.html', solicitudes=solicitudes, asignaturas_uco=asignaturas_uco, asignaturas_exterior=asignaturas_exterior)
 
 @app.route('/solicitud/<id>/eliminar', methods=['GET'])
 @login_required
 def eliminar_solicitud(id):
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM solicitudes WHERE id = ?', (id,))
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('DELETE FROM solicitudes WHERE id = ?', (id,))
     conn.commit()
     conn.close()
 
