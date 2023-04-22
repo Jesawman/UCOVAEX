@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash,session
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -48,27 +48,27 @@ def close_db(error):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        conn = get_db()
-        c = conn.cursor()
-        c.execute("SELECT * FROM usuarios WHERE nombre_usuario=?", (request.form['username'],))
-        login_user_dict = c.fetchone()
+        with get_db() as conn:
+            c = conn.cursor()
+            c.execute("SELECT * FROM usuarios WHERE nombre_usuario=?", (request.form['username'],))
+            login_user_dict = c.fetchone()
 
-        if login_user_dict:
-            if check_password_hash(login_user_dict[3], request.form['password']):
-                user_obj = User(login_user_dict[2])
-                login_user(user_obj)
-                if login_user_dict[1] == 'alumno':
-                    return redirect(url_for('solicitud'))
-                elif login_user_dict[1] == 'comision':
-                    return redirect(url_for('comentarios'))
-                elif login_user_dict[1] == 'administrador':
-                    return redirect(url_for('administracion'))
+            if login_user_dict:
+                if check_password_hash(login_user_dict[3], request.form['password']):
+                    user_obj = User(login_user_dict[2])
+                    login_user(user_obj)
+                    if login_user_dict[1] == 'alumno':
+                        return redirect(url_for('solicitud'))
+                    elif login_user_dict[1] == 'comision':
+                        return redirect(url_for('comentarios'))
+                    elif login_user_dict[1] == 'administrador':
+                        return redirect(url_for('administracion'))
+                else:
+                    flash('Contraseña incorrecta')
+                    return redirect(url_for('login'))
             else:
-                flash('Contraseña incorrecta')
+                flash('Usuario no encontrado')
                 return redirect(url_for('login'))
-        else:
-            flash('Usuario no encontrado')
-            return redirect(url_for('login'))
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -192,8 +192,10 @@ def administracion():
 @app.route('/logout')
 @login_required
 def logout():
+    session.clear()
     logout_user()
     return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
