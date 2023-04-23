@@ -61,32 +61,34 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Nombre</th>
-                                                <th>Asignatura UCO</th>
-                                                <th>Asignatura Extranjero</th>
-                                                <th>Fecha</th>
-                                                <th>Estado</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for solicitud in solicitudes %}
+                                    <div id="scrolltable">
+                                        <table class="table">
+                                            <thead>
                                                 <tr>
-                                                    <td>{{ solicitud['apellidos_y_nombre_alumno'] }}</td>
-                                                    <td>{{ get_nombre_asignatura_uco(solicitud['codigo_asignatura_uco']) }}</td>
-                                                    <td>{{ get_nombre_asignatura_exterior(solicitud['codigo_asignatura_extranjero']) }}</td>
-                                                    <td>{{ solicitud['fecha_solicitud'] }}</td>
-                                                    <td>{{ solicitud['estado'] }}</td>
-                                                    <td>
-                                                        <a href="{{ url_for('eliminar_solicitud', id=solicitud['_id']) }}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar esta solicitud?')"><i class="fas fa-trash-alt"></i></a>
-                                                    </ td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                                                    <th>Nombre</th>
+                                                    <th>Asignatura UCO</th>
+                                                    <th>Asignatura Extranjero</th>
+                                                    <th>Fecha</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for solicitud in solicitudes %}
+                                                    <tr>
+                                                        <td>{{ solicitud['apellidos_y_nombre_alumno'] }}</td>
+                                                        <td>{{ get_nombre_asignatura_uco(solicitud['codigo_asignatura_uco']) }}</td>
+                                                        <td>{{ get_nombre_asignatura_exterior(solicitud['codigo_asignatura_extranjero']) }}</td>
+                                                        <td>{{ solicitud['fecha_solicitud'] }}</td>
+                                                        <td>{{ solicitud['estado'] }}</td>
+                                                        <td>
+                                                            <a href="{{ url_for('eliminar_solicitud', id=solicitud['_id']) }}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar esta solicitud?')"><i class="fas fa-trash-alt"></i></a>
+                                                        </ td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

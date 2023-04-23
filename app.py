@@ -102,19 +102,17 @@ def register():
 @login_required
 def solicitud():
     if request.method == 'POST':
-        with get_db as conn:
-            c = conn.c()
+        with get_db() as conn:
+            c = conn.cursor()
             c.execute("INSERT INTO solicitudes(apellidos_y_nombre_alumno, codigo_asignatura_uco, codigo_asignatura_extranjero, codigo_solicitud, fecha_solicitud) VALUES (?, ?, ?, ?, ?)", (request.form['nombre'], request.form['asignatura_uco'], request.form['asignatura_extranjero'], cursor.execute('SELECT COUNT(*) FROM solicitudes').fetchone()[0] + 1, datetime.datetime.now()))
             conn.commit()
-            conn.close()
             flash('Solicitud enviada')
             return redirect(url_for('solicitud'))
-    with get_db as conn:
-        c = conn.c()
+    with get_db() as conn:
+        c = conn.cursor()
         solicitudes = c.execute("SELECT * FROM solicitudes WHERE apellidos_y_nombre_alumno = ?", (current_user.get_id(),)).fetchall()
         asignaturas_uco = c.execute("SELECT * FROM asignaturas_uco").fetchall()
         asignaturas_exterior = c.execute("SELECT * FROM asignaturas_exterior").fetchall()
-        conn.close()
     return render_template('solicitud.html', solicitudes=solicitudes, asignaturas_uco=asignaturas_uco, asignaturas_exterior=asignaturas_exterior)
 
 @app.route('/solicitud/<id>/eliminar', methods=['GET'])
