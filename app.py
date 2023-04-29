@@ -187,6 +187,25 @@ def administracion():
         solicitudes = cur.fetchall()
     return render_template('administracion.html', solicitudes=solicitudes)
 
+@app.route('/agregar_asignatura', methods=['GET', 'POST'])
+@login_required
+def agregar_asignatura():
+    if request.method == 'POST':
+        conn = sqlite3.connect('database.db')
+        conn = get_db()
+        c = conn.cursor()
+        tabla = request.form['tabla']
+        if tabla == 'asignaturas_uco':
+            c.execute('INSERT INTO asignaturas_uco (codigo_asignatura_uco, nombre_uco, ects_uco) VALUES (?, ?, ?)',
+                      (request.form['codigo'], request.form['nombre'], request.form['ects']))
+        elif tabla == 'asignaturas_exterior':
+            c.execute('INSERT INTO asignaturas_exterior (codigo_asignatura_extranjero, nombre_extranjero, url, ects_extranjero) VALUES (?, ?, ?, ?)',
+                      (request.form['codigo'], request.form['nombre'], request.form['url'], request.form['ects']))
+        conn.commit()
+        flash('Asignatura añadida correctamente')
+        return redirect(url_for('agregar_asignatura'))
+    return render_template('agregar_asignatura.html')
+
 @app.route('/logout')
 @login_required
 def logout():
