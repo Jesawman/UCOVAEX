@@ -209,9 +209,9 @@ def agregar_asignatura():
 @app.route('/logout')
 @login_required
 def logout():
-    session.clear()
     logout_user()
-    return redirect(url_for('index'))
+    flash('Has cerrado sesión.')
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
