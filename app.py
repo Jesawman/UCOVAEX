@@ -195,15 +195,15 @@ def agregar_asignatura():
     if request.method == 'POST':
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
-    if 'asignatura_uco' in request.form:
-        c.execute('INSERT INTO asignaturas_uco (codigo_asignatura_uco, nombre_uco, ects_uco) VALUES (?, ?, ?)',
-        (request.form['codigo_asignatura_uco'], request.form['nombre_uco'], request.form['ects_uco']))
-    elif 'asignatura_exterior' in request.form:
-        c.execute('INSERT INTO asignaturas_exterior (codigo_asignatura_extranjero, nombre_extranjero, url, ects_extranjero) VALUES (?, ?, ?, ?)',
-        (request.form['codigo_asignatura_extranjero'], request.form['nombre_extranjero'], request.form['url'], request.form['ects_extranjero']))
-        conn.commit()
-        flash('Asignatura añadida correctamente')
-        return redirect(url_for('agregar_asignatura'))
+        if 'asignatura_uco' in request.form:
+            c.execute('INSERT INTO asignaturas_uco (codigo_asignatura_uco, nombre_uco, ects_uco) VALUES (?, ?, ?)',
+            (request.form['codigo_asignatura_uco'], request.form['nombre_uco'], request.form['ects_uco']))
+        elif 'asignatura_exterior' in request.form:
+            c.execute('INSERT INTO asignaturas_exterior (codigo_asignatura_extranjero, nombre_extranjero, url, ects_extranjero) VALUES (?, ?, ?, ?)',
+            (request.form['codigo_asignatura_extranjero'], request.form['nombre_extranjero'], request.form['url'], request.form['ects_extranjero']))
+            conn.commit()
+            flash('Asignatura añadida correctamente')
+            return redirect(url_for('agregar_asignatura'))
     return render_template('agregar_asignatura.html')
 
 @app.route('/logout')
@@ -211,7 +211,7 @@ def agregar_asignatura():
 def logout():
     logout_user()
     flash('Has cerrado sesión.')
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
