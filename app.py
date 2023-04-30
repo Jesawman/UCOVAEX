@@ -104,7 +104,7 @@ def solicitud():
     if request.method == 'POST':
         with get_db() as conn:
             c = conn.cursor()
-            c.execute("INSERT INTO solicitudes(apellidos_y_nombre_alumno, codigo_asignatura_uco, codigo_asignatura_extranjero, codigo_solicitud, fecha_solicitud) VALUES (?, ?, ?, ?, ?)", (request.form['nombre'], request.form['asignatura_uco'], request.form['asignatura_extranjero'], cursor.execute('SELECT COUNT(*) FROM solicitudes').fetchone()[0] + 1, datetime.datetime.now()))
+            c.execute("INSERT INTO solicitudes(apellidos_y_nombre_alumno, codigo_asignatura_uco, codigo_asignatura_extranjero, codigo_solicitud, fecha_solicitud) VALUES (?, ?, ?, ?, ?)", (request.form['nombre'], request.form['asignatura_uco'], request.form['asignatura_extranjero'], c.execute('SELECT COUNT(*) FROM solicitudes').fetchone()[0] + 1, datetime.datetime.now()))
             conn.commit()
             flash('Solicitud enviada')
             return redirect(url_for('solicitud'))
@@ -192,15 +192,13 @@ def administracion():
 def agregar_asignatura():
     if request.method == 'POST':
         conn = sqlite3.connect('database.db')
-        conn = get_db()
         c = conn.cursor()
-        tabla = request.form['tabla']
-        if tabla == 'asignaturas_uco':
-            c.execute('INSERT INTO asignaturas_uco (codigo_asignatura_uco, nombre_uco, ects_uco) VALUES (?, ?, ?)',
-                      (request.form['codigo'], request.form['nombre'], request.form['ects']))
-        elif tabla == 'asignaturas_exterior':
-            c.execute('INSERT INTO asignaturas_exterior (codigo_asignatura_extranjero, nombre_extranjero, url, ects_extranjero) VALUES (?, ?, ?, ?)',
-                      (request.form['codigo'], request.form['nombre'], request.form['url'], request.form['ects']))
+    if 'asignatura_uco' in request.form:
+        c.execute('INSERT INTO asignaturas_uco (codigo_asignatura_uco, nombre_uco, ects_uco) VALUES (?, ?, ?)',
+        (request.form['codigo_asignatura_uco'], request.form['nombre_uco'], request.form['ects_uco']))
+    elif 'asignatura_exterior' in request.form:
+        c.execute('INSERT INTO asignaturas_exterior (codigo_asignatura_extranjero, nombre_extranjero, url, ects_extranjero) VALUES (?, ?, ?, ?)',
+        (request.form['codigo_asignatura_extranjero'], request.form['nombre_extranjero'], request.form['url'], request.form['ects_extranjero']))
         conn.commit()
         flash('Asignatura añadida correctamente')
         return redirect(url_for('agregar_asignatura'))
