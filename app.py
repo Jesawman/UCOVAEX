@@ -36,9 +36,9 @@ def index():
     return render_template('index.html')
 
 def get_db():
-    if not hasattr(threading.current_thread(), 'sqlite_db'):
-        threading.current_thread().sqlite_db = sqlite3.connect('database.db')
-    return threading.current_thread().sqlite_db
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
 @app.teardown_appcontext
 def close_db(error):
@@ -64,6 +64,8 @@ def login():
                     elif login_user_dict[1] == 'administrador':
                         return redirect(url_for('administracion'))
                 else:
+                    new_hash = generate_password_hash(request.form['password'])
+                    c.execute("UPDATE usuarios SET contrasenia=? WHERE nombre_usuario=?", (new_hash, request.form['username']))
                     flash('Contraseña incorrecta')
                     return redirect(url_for('login'))
             else:
