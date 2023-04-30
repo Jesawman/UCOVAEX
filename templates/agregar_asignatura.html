@@ -18,28 +18,24 @@
         </header>
 		  <div class="centrar">
             <div class="enmarcar">
-				<h2>Añadir asignatura de la UCO</h2>
-				<form action="add_asignatura_uco.php" method="post">
-					<label for="codigo_asignatura_uco">Código de la asignatura:</label>
-					<input type="text" id="codigo_asignatura_uco" name="codigo_asignatura_uco" required><br><br>
-					<label for="nombre_uco">Nombre de la asignatura:</label>
-					<input type="text" id="nombre_uco" name="nombre_uco" required><br><br>
-					<label for="ects_uco">ECTS:</label>
-					<input type="text" id="ects_uco" name="ects_uco" required><br><br>
+				<form action="{{ url_for('agregar_asignatura') }}" method="post">
+					<label for="tabla">Tabla:</label>
+					<select id="tabla" name="tabla" required>
+						<option value="asignaturas_uco">Asignaturas UCO</option>
+						<option value="asignaturas_exterior">Asignaturas Exterior</option>
+					</select><br><br>
+					<label for="codigo">Código de la asignatura:</label>
+					<input type="text" id="codigo" name="codigo" required><br><br>
+					<label for="nombre">Nombre de la asignatura:</label>
+					<input type="text" id="nombre" name="nombre" required><br><br>
+					{% if tabla == 'asignaturas_exterior' %}
+						<label for="url">URL:</label>
+						<input type="text" id="url" name="url" required><br><br>
+					{% endif %}
+					<label for="ects">ECTS:</label>
+					<input type="text" id="ects" name="ects" required><br><br>
 					<input type="submit" value="Añadir">
 				</form>
-			  <h2>Añadir asignatura del exterior</h2>
-			  <form action="add_asignatura_exterior.php" method="post">
-				<label for="codigo_asignatura_extranjero">Código de la asignatura:</label>
-				<input type="text" id="codigo_asignatura_extranjero" name="codigo_asignatura_extranjero" required><br><br>
-				<label for="nombre_extranjero">Nombre de la asignatura:</label>
-				<input type="text" id="nombre_extranjero" name="nombre_extranjero" required><br><br>
-				<label for="url">URL:</label>
-				<input type="text" id="url" name="url" required><br><br>
-				<label for="ects_extranjero">ECTS:</label>
-				<input type="text" id="ects_extranjero" name="ects_extranjero" required><br><br>
-				<input type="submit" value="Añadir">
-			  </form>
 			</div>
 		  </div>
 		</body>
