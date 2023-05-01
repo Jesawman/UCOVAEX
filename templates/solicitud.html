@@ -18,81 +18,76 @@
                     <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
                 </form>
             </header>
-            <div class="centrar">
-                <div class="enmarcar">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <h1>Solicitudes</h1>
-                            </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h1>Solicitudes</h1>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <form action="" method="post">
-                                    <div class="form-group">
-                                        <label for="nombre">Nombre</label>
-                                        <input type="text" name="nombre" id="nombre" class="form-control" value="{{ current_user.get_id() }}" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="asignatura_uco">Asignatura UCO</label>
-                                        <select name="asignatura_uco" id="asignatura_uco" class="form-control">
-                                            {% for asignatura in asignaturas_uco %}
-                                                <option value="{{ asignatura['codigo_asignatura_uco'] }}">{{ asignatura['nombre_uco'] }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="asignatura_extranjero">Asignatura Extranjero</label>
-                                        <select name="asignatura_extranjero" id="asignatura_extranjero" class="form-control">
-                                            {% for asignatura in asignaturas_exterior %}
-                                                <option value="{{ asignatura['codigo_asignatura_extranjero'] }}">{{ asignatura['nombre_extranjero'] }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    
-                                    <input type="submit" value="Enviar solicitud" class="btn btn-primary">
-                                </form>
-                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form action="" method="post">
+                                <div class="form-group">
+                                    <label for="nombre">Nombre</label>
+                                    <input type="text" name="nombre" id="nombre" class="form-control" value="{{ current_user.get_id() }}" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="asignatura_uco">Asignatura UCO</label>
+                                    <select name="asignatura_uco" id="asignatura_uco" class="form-control">
+                                        {% for asignatura in asignaturas_uco %}
+                                            <option value="{{ asignatura['codigo_asignatura_uco'] }}">{{ asignatura['nombre_uco'] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="asignatura_extranjero">Asignatura Extranjero</label>
+                                    <select name="asignatura_extranjero" id="asignatura_extranjero" class="form-control">
+                                        {% for asignatura in asignaturas_exterior %}
+                                            <option value="{{ asignatura['codigo_asignatura_extranjero'] }}">{{ asignatura['nombre_extranjero'] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <input type="submit" value="Enviar solicitud" class="btn btn-primary">
+                            </form>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div id="scrolltable">
-                                            <table class="table">
-                                                <thead>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="scrolltable">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nombre</th>
+                                                    <th>Asignatura UCO</th>
+                                                    <th>Asignatura Extranjero</th>
+                                                    <th>Fecha</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for solicitud in solicitudes %}
                                                     <tr>
-                                                        <th>Nombre</th>
-                                                        <th>Asignatura UCO</th>
-                                                        <th>Asignatura Extranjero</th>
-                                                        <th>Fecha</th>
-                                                        <th>Estado</th>
-                                                        <th>Acciones</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for solicitud in solicitudes %}
-                                                        <tr>
-                                                            <td>{{ solicitud['apellidos_y_nombre_alumno'] }}</td>
-                                                            <td>{{ get_nombre_asignatura_uco(solicitud['codigo_asignatura_uco']) }}</td>
-                                                            <td>{{ get_nombre_asignatura_exterior(solicitud['codigo_asignatura_extranjero']) }}</td>
-                                                            <td>{{ solicitud['fecha_solicitud'] }}</td>
-                                                            <td>{{ solicitud['estado'] }}</td>
-                                                            <td>
-                                                                <a href="{{ url_for('eliminar_solicitud', id=solicitud['_id']) }}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar esta solicitud?')"><i class="fas fa-trash-alt"></i></a>
-                                                            </ td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                        <td>{{ solicitud['apellidos_y_nombre_alumno'] }}</td>
+                                                        <td>{{ get_nombre_asignatura_uco(solicitud['codigo_asignatura_uco']) }}</td>
+                                                        <td>{{ get_nombre_asignatura_exterior(solicitud['codigo_asignatura_extranjero']) }}</td>
+                                                        <td>{{ solicitud['fecha_solicitud'] }}</td>
+                                                        <td>{{ solicitud['estado'] }}</td>
+                                                        <td>
+                                                            <a href="{{ url_for('eliminar_solicitud', id=solicitud[0]) }}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar esta solicitud?')"><i class="fas fa-trash"></i></a>
+                                                        </ td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
     </body>
 
 </html>

@@ -115,7 +115,7 @@ def solicitud():
     if request.method == 'POST':
         with get_db() as conn:
             c = conn.cursor()
-            c.execute("INSERT INTO solicitudes(apellidos_y_nombre_alumno, codigo_asignatura_uco, codigo_asignatura_extranjero, codigo_solicitud, fecha_solicitud) VALUES (?, ?, ?, ?, ?)", (request.form['nombre'], request.form['asignatura_uco'], request.form['asignatura_extranjero'], c.execute('SELECT COUNT(*) FROM solicitudes').fetchone()[0] + 1, datetime.datetime.now()))
+            c.execute("INSERT INTO solicitudes(apellidos_y_nombre_alumno, codigo_asignatura_uco, codigo_asignatura_extranjero, codigo_solicitud, fecha_solicitud, estado, comentarios) VALUES (?, ?, ?, ?, ?, ?, ?)", (request.form['nombre'], request.form['asignatura_uco'], request.form['asignatura_extranjero'], c.execute('SELECT COUNT(*) FROM solicitudes').fetchone()[0] + 1, datetime.datetime.now(), "Por aprobar", ""))
             conn.commit()
             flash('Solicitud enviada')
             return redirect(url_for('solicitud'))
@@ -132,7 +132,7 @@ def solicitud():
     # Renderizar la plantilla solicitud.html y pasar las solicitudes y asignaturas a ella
     return render_template('solicitud.html', solicitudes=solicitudes, asignaturas_uco=asignaturas_uco, asignaturas_exterior=asignaturas_exterior)
 
-@app.route('/solicitud/<id>/eliminar', methods=['GET'])
+@app.route('/solicitud/<int:id>/eliminar', methods=['GET'])
 @login_required
 def eliminar_solicitud(id):
     conn = get_db()
@@ -140,7 +140,6 @@ def eliminar_solicitud(id):
     c.execute('DELETE FROM solicitudes WHERE id = ?', (id,))
     conn.commit()
     conn.close()
-
     flash('Solicitud eliminada')
     return redirect(url_for('solicitud'))
 
