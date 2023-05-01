@@ -14,7 +14,9 @@
         <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
             <h1 style="margin: 0;">UCOVAEX</h1>
             <div style="flex-grow: 1;"></div>
-            <a href="#" onclick="logout()" class="button" style="font-size: 14px;">Cerrar sesión</a>
+            <form action="{{ url_for('logout') }}" method="post">
+                <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+            </form>
         </header>
     <div class="container">
         <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px; position: fixed; top: 100px; right: 10px; padding: 10px; border-radius: 5px;">Agregar Asignaturas</a>

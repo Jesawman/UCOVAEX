@@ -45,6 +45,15 @@ def close_db(error):
     if hasattr(threading.current_thread(), 'sqlite_db'):
         threading.current_thread().sqlite_db.close()
 
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    response.headers['Cache-Control'] = 'public, max-age=0'
+    return response
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -206,12 +215,13 @@ def agregar_asignatura():
             return redirect(url_for('agregar_asignatura'))
     return render_template('agregar_asignatura.html')
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
     flash('Has cerrado sesión.')
     return redirect(url_for('index'))
+
 
 
 if __name__ == '__main__':
