@@ -119,11 +119,17 @@ def solicitud():
             conn.commit()
             flash('Solicitud enviada')
             return redirect(url_for('solicitud'))
+    
     with get_db() as conn:
         c = conn.cursor()
+        # Obtener todas las solicitudes del usuario actual
         solicitudes = c.execute("SELECT * FROM solicitudes WHERE apellidos_y_nombre_alumno = ?", (current_user.get_id(),)).fetchall()
+        # Obtener todas las asignaturas UCO
         asignaturas_uco = c.execute("SELECT * FROM asignaturas_uco").fetchall()
+        # Obtener todas las asignaturas en el extranjero
         asignaturas_exterior = c.execute("SELECT * FROM asignaturas_exterior").fetchall()
+    
+    # Renderizar la plantilla solicitud.html y pasar las solicitudes y asignaturas a ella
     return render_template('solicitud.html', solicitudes=solicitudes, asignaturas_uco=asignaturas_uco, asignaturas_exterior=asignaturas_exterior)
 
 @app.route('/solicitud/<id>/eliminar', methods=['GET'])
