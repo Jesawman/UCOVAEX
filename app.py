@@ -45,6 +45,11 @@ def close_db(error):
     if hasattr(threading.current_thread(), 'sqlite_db'):
         threading.current_thread().sqlite_db.close()
 
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+    app.permanent_session_lifetime = datetime.timedelta(minutes=5)
+
 @app.after_request
 def add_header(response):
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
