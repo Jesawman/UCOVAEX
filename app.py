@@ -188,22 +188,21 @@ def comentarios():
 @app.route('/administracion', methods=['GET', 'POST'])
 @login_required
 def administracion():
-    conn=get_db();
     if request.method == 'POST':
-        # Actualización de la solicitud en la base de datos
-        cursor = conn.cursor()
-        cursor.execute('UPDATE solicitudes SET estado = ? WHERE _id = ?', 
-                       (request.form['estado'], request.form['_id']))
-        conn.commit()
-        flash('Solicitud actualizada')
-        return redirect(url_for('administracion'))
-    
+        with get_db() as conn:
+            c = conn.cursor()
+            c.execute('UPDATE solicitudes SET estado = ? WHERE codigo_solicitud = ?', 
+                        (request.form['estado'], request.form['_id']))
+            conn.commit()
+            flash('Solicitud actualizada')
+            return redirect(url_for('administracion'))
+        
     # Obtener solicitudes de la base de datos
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM solicitudes')
-    solicitudes = cursor.fetchall()
-    
-    return render_template('administracion.html', solicitudes=solicitudes)
+    with get_db() as conn:
+        c = conn.cursor()
+        solicitudes= c.execute('SELECT * FROM solicitudes').fetchall()
+        
+        return render_template('administracion.html', solicitudes=solicitudes)
 
 
 @app.route('/agregar_asignatura', methods=['GET', 'POST'])
