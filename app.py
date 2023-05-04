@@ -144,31 +144,29 @@ def eliminar_solicitud(id):
     return redirect(url_for('solicitud'))
 
 def get_nombre_asignatura_uco(codigo_asignatura_uco):
-    conn = sqlite3.connect('database.db')
-    conn = get_db()
-    c = conn.cursor()
-    c.execute("SELECT nombre_uco FROM asignaturas_uco WHERE codigo_asignatura_uco=?", (codigo_asignatura_uco,))
-    asignatura_uco = c.fetchone()
-    conn.close()
+    conn = get_db();
+    cursor = conn.cursor()
+    cursor.execute('SELECT nombre_uco FROM asignaturas_uco WHERE codigo_asignatura_uco = ?', 
+                   (codigo_asignatura_uco,))
+    asignatura_uco = cursor.fetchone()
+    
     if asignatura_uco:
         return asignatura_uco[0]
     else:
         return None
-
 app.jinja_env.globals.update(get_nombre_asignatura_uco=get_nombre_asignatura_uco)
-
+    
 def get_nombre_asignatura_exterior(codigo_asignatura_extranjero):
-    conn = sqlite3.connect('database.db')
-    conn = get_db()
-    c = conn.cursor()
-    c.execute("SELECT nombre_extranjero FROM asignaturas_exterior WHERE codigo_asignatura_extranjero = ?", (codigo_asignatura_extranjero,))
-    result = c.fetchone()
-    conn.close()
-    if result:
-        return result[0]
+    conn = get_db();
+    cursor = conn.cursor()
+    cursor.execute('SELECT nombre_extranjero FROM asignaturas_exterior WHERE codigo_asignatura_extranjero = ?', 
+                   (codigo_asignatura_extranjero,))
+    asignatura_exterior = cursor.fetchone()
+    
+    if asignatura_exterior:
+        return asignatura_exterior[0]
     else:
         return None
-
 app.jinja_env.globals.update(get_nombre_asignatura_exterior=get_nombre_asignatura_exterior)
 
 @app.route('/comentarios', methods=['GET', 'POST'])
@@ -190,18 +188,23 @@ def comentarios():
 @app.route('/administracion', methods=['GET', 'POST'])
 @login_required
 def administracion():
+    conn=get_db();
     if request.method == 'POST':
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute('UPDATE solicitudes SET estado=? WHERE _id=?', (request.form['estado'], request.form['_id']))
-            con.commit()
-            flash('Solicitud actualizada')
-            return redirect(url_for('administracion'))
-    with sqlite3.connect('database.db') as con:
-        cur = con.cursor()
-        cur.execute('SELECT * FROM solicitudes')
-        solicitudes = cur.fetchall()
+        # Actualización de la solicitud en la base de datos
+        cursor = conn.cursor()
+        cursor.execute('UPDATE solicitudes SET estado = ? WHERE _id = ?', 
+                       (request.form['estado'], request.form['_id']))
+        conn.commit()
+        flash('Solicitud actualizada')
+        return redirect(url_for('administracion'))
+    
+    # Obtener solicitudes de la base de datos
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM solicitudes')
+    solicitudes = cursor.fetchall()
+    
     return render_template('administracion.html', solicitudes=solicitudes)
+
 
 @app.route('/agregar_asignatura', methods=['GET', 'POST'])
 @login_required
