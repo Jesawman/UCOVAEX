@@ -30,33 +30,31 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Nombre</th>
-                                <th>Asignatura UCO</th>
-                                <th>Asignatura Extranjero</th>
-                                <th>Fecha</th>
-                                <th>Estado</th>
-                                <th>Comentarios</th>
-                                <th>Acciones</th>
+                                <center><th>Nombre</th></center>
+                                <center><th>Asignatura UCO</th></center>
+                                <center><th>Asignatura Extranjero</th></center>
+                                <center><th>Fecha</th></center>
+                                <center><th>Estado</th></center>
+                                <center><th>Comentarios</th></center>
+                                <center><th>Acciones</th></center>
                             </tr>
                         </thead>
                         <tbody>
                             {% for solicitud in solicitudes %}
                                 <tr>
-                                    <td>{{ solicitud['apellidos_y_nombre_alumno'] }}</td>
-                                    <td>{{ get_nombre_asignatura_uco(solicitud['codigo_asignatura_uco']) }}</td>
-                                    <td>{{ get_nombre_asignatura_exterior(solicitud['codigo_asignatura_extranjero']) }}</td>
-                                    <td>{{ solicitud['fecha_solicitud'] }}</td>
-                                    <td>{{ solicitud['estado'] }}</td>
+                                    <center><td>{{ solicitud['apellidos_y_nombre_alumno'] }}</td></center>
+                                    <center><td>{{ get_nombre_asignatura_uco(solicitud['codigo_asignatura_uco']) }}</td></center>
+                                    <center><td>{{ get_nombre_asignatura_exterior(solicitud['codigo_asignatura_extranjero']) }}</td></center>
+                                    <center><td>{{ solicitud['fecha_solicitud'] }}</td></center>
+                                    <center><td>{{ solicitud['estado'] }}</td></center>
                                     <td>
                                         <form action="" method="post">
-                                            <input type="hidden" name="_id" value="{{ solicitud['_id'] }}">
-                                            <textarea name="comentarios" id="comentarios" cols="30" rows="10" class="form-control">{{ solicitud['comentarios'] }}</textarea>
-                                            <input type="submit" value="Guardar" class="btn btn-primary">
-                                        </form>
+                                            <input type="hidden" name="_id" value="{{ solicitud[0] }}">
+                                            <textarea name="comentarios" id="comentarios" cols="30" rows="1" class="form-control">{{ solicitud['comentarios'] }}</textarea>
                                     </td>
                                     <td>
-                                        <a href="{{ url_for('comentarios', id=solicitud['_id']) }}" class="btn btn-primary"><i class="fas fa-edit"></i></a>
-                                        <a href="{{ url_for('comentarios', id=solicitud['_id']) }}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                        <input type="submit" value="Guardar" class="btn btn-primary">
+                                        </form>
                                     </td>
                                 </tr>
                             {% endfor %}

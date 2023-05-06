@@ -178,17 +178,17 @@ app.jinja_env.globals.update(get_nombre_asignatura_exterior=get_nombre_asignatur
 @login_required
 def comentarios():
     if request.method == 'POST':
-        conn = sqlite3.connect('database.db')
-        conn = get_db()
+        with get_db() as conn:
+            c = conn.cursor()
+            c.execute("UPDATE solicitudes SET comentarios = ? WHERE id = ?", (request.form['comentarios'], request.form['_id']))
+            conn.commit()
+            flash('Comentarios guardados')
+            return redirect(url_for('comentarios'))
+    with get_db() as conn:
         c = conn.cursor()
-        c.execute('UPDATE solicitudes SET comentarios = ? WHERE id = ?', (request.form['comentarios'], request.form['_id']))
-        c.commit()
-        flash('Comentarios guardados')
-        return redirect(url_for('comentarios'))
-    conn = sqlite3.connect('database.db')
-    cur = c.execute('SELECT * FROM solicitudes')
-    solicitudes = cur.fetchall()
+        solicitudes = c.execute("SELECT * FROM solicitudes").fetchall()
     return render_template('comentarios.html', solicitudes=solicitudes)
+
 
 @app.route('/administracion', methods=['GET', 'POST'])
 @login_required
