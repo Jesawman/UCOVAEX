@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
-
   </head>
   <body>
     <header>
@@ -19,15 +18,19 @@
       <a href="{{ url_for('register') }}" class="button" style="font-size: 14px;">Registrarse</a>
     </header>
     <main>
-      <section class="container">
-        <h1>Bienvenidos a UCO Validación de Asignaturas</h1>
-        <p>Valida las asignaturas que has cursado en el extranjero para poder usarlas en tu expediente académico</p>
+      <section class="inicio">
+        <h1>Bienvenido a UCO Validación de Asignaturas</h1>
+        <p>¿Estás planeando estudiar en el extranjero y deseas asegurarte de que tus créditos serán reconocidos por tu institución académica? Con UCO Validación de Asignaturas, podrás validar las asignaturas que planeas cursar en el extranjero y garantizar que serán reconocidas por tu universidad, eliminando así la preocupación de si tus estudios en el extranjero afectarán tu progreso académico. </p>
+        <img src="/static/images/portada.png">
         </section>
         <section class="features">
         <div class="container">
-        <h2 class="section-title">¿Qué puedes hacer con UCO Validación de Asignaturas?</h2>
         <div class="feature-item">
-        <img src="https://via.placeholder.com/200x200" alt="Feature Icon">
+          <h2 class="section-title">¿Qué puedes hacer con UCO Validación de Asignaturas?</h2>
+          <video autoplay loop autoplay muted id="vid">>
+            <source src="/static/videos/uco1.mp4" type="video/mp4" id="vid">
+            Tu navegador no soporta el formato de video.
+          </video>          
         <h3 class="feature-title">Validar tus asignaturas</h3>
         <p class="feature-description">Con UCO Validación de Asignaturas podrás validar las asignaturas que has cursado en el extranjero para usarlas en tu expediente académico.</p>
         </div>
