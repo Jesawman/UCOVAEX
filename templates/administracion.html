@@ -15,14 +15,12 @@
         <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
             <h1 style="margin: 0;">UCOVAEX</h1>
             <div style="flex-grow: 1;"></div>
-            <form action="{{ url_for('agregar_asignatura') }}" method="post">
-                <button type="submit" class="button" style="font-size: 14px;">Agregar Asignaturas</button>
-            </form>
             <form action="{{ url_for('logout') }}" method="post">
                 <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
             </form>
         </header>
     <div class="container">
+        <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px; position: fixed; top: 100px; right: 10px; padding: 10px; border-radius: 5px;">Agregar Asignaturas</a>
         <div class="row">
             <div class="col-md-12">
                 <h1>Valoración de Solicitudes</h1>
@@ -53,13 +51,13 @@
                                 <td>{{ solicitud['comentarios'] }}</td>
                                 <td>
                                     <form action="" method="post">
-                                        <input type="hidden" name="_id" value="{{ solicitud[4] }}">
-                                        <input type="hidden" name="estado" value="Aceptada">
+                                        <input type="hidden" name="_id" value="{{ solicitud['_id'] }}">
+                                        <input type="hidden" name="estado" value="aceptada">
                                         <input type="submit" value="Aceptar" class="btn btn-primary">
-                                    </form>
+                                    </form>s
                                     <form action="" method="post">
-                                        <input type="hidden" name="_id" value="{{ solicitud[4] }}">
-                                        <input type="hidden" name="estado" value="Denegada">
+                                        <input type="hidden" name="_id" value="{{ solicitud['_id'] }}">
+                                        <input type="hidden" name="estado" value="denegada">
                                         <input type="submit" value="Denegar" class="btn btn-danger">
                                     </form>
                                 </td>
@@ -71,17 +69,4 @@
         </div>
     </div>
 </body>
-<script>
-    function logout() {
-        fetch('/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({})
-        }).then(function(response) {
-            window.location.href = "{{ url_for('index') }}";
-        });
-    }
-</script>
 </html>
