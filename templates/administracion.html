@@ -51,12 +51,12 @@
                                 <td>{{ solicitud['comentarios'] }}</td>
                                 <td>
                                     <form action="" method="post">
-                                        <input type="hidden" name="_id" value="{{ solicitud['_id'] }}">
+                                        <input type="hidden" name="_id" value="{{ solicitud[0] }}">
                                         <input type="hidden" name="estado" value="aceptada">
                                         <input type="submit" value="Aceptar" class="btn btn-primary">
-                                    </form>s
+                                    </form>
                                     <form action="" method="post">
-                                        <input type="hidden" name="_id" value="{{ solicitud['_id'] }}">
+                                        <input type="hidden" name="_id" value="{{ solicitud[0] }}">
                                         <input type="hidden" name="estado" value="denegada">
                                         <input type="submit" value="Denegar" class="btn btn-danger">
                                     </form>
