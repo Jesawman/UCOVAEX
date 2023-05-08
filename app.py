@@ -201,8 +201,6 @@ def administracion():
             conn.commit()
             flash('Solicitud actualizada')
             return redirect(url_for('administracion'))
-        
-    # Obtener solicitudes de la base de datos
     with get_db() as conn:
         c = conn.cursor()
         solicitudes= c.execute('SELECT * FROM solicitudes').fetchall()

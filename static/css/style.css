@@ -93,6 +93,13 @@
         margin-bottom: 10px;
       }
       
+      .feature-item img {
+        width: 100%;
+        max-width: 800px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+      
       .feature-title {
         font-size: 24px;
         margin-top: 10px;
