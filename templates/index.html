@@ -11,11 +11,19 @@
   </head>
   <body>
     <header>
-      <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
+      <a href="/">
+        <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
+      </a>
       <h1 style="margin: 0;">UCOVAEX</h1>
       <div style="flex-grow: 1;"></div>
-      <a href="{{ url_for('login') }}" class="button" style="font-size: 14px;">Iniciar sesión</a>
-      <a href="{{ url_for('register') }}" class="button" style="font-size: 14px;">Registrarse</a>
+      {% if logged_in %}
+        <form action="{{ url_for('logout') }}" method="post">
+          <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="button" style="font-size: 14px;">Iniciar sesión</a>
+        <a href="{{ url_for('register') }}" class="button" style="font-size: 14px;">Registrarse</a>
+      {% endif %}
     </header>
     <main>
       <section class="inicio">

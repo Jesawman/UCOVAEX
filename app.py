@@ -7,6 +7,7 @@ import threading
 
 app = Flask(__name__)
 app.secret_key = 'secretkey'
+logged_in = False
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -33,7 +34,7 @@ def load_user(username):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', logged_in=logged_in)
 
 def get_db():
     conn = sqlite3.connect('database.db')
@@ -63,6 +64,7 @@ def add_header(response):
 def login():
     if request.method == 'POST':
         with get_db() as conn:
+            global logged_in
             c = conn.cursor()
             c.execute("SELECT * FROM usuarios WHERE nombre_usuario=?", (request.form['username'],))
             login_user_dict = c.fetchone()
@@ -71,6 +73,7 @@ def login():
                 if check_password_hash(login_user_dict[3], request.form['password']):
                     user_obj = User(login_user_dict[2])
                     login_user(user_obj)
+                    logged_in = True
                     if login_user_dict[1] == 'alumno':
                         return redirect(url_for('solicitud'))
                     elif login_user_dict[1] == 'comision':
@@ -229,6 +232,8 @@ def agregar_asignatura():
 @login_required
 def logout():
     logout_user()
+    global logged_in
+    logged_in = False
     flash('Has cerrado sesión.')
     return redirect(url_for('index'))
 
