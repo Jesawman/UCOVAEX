@@ -1,0 +1,309 @@
+  header {
+        background-color: #221C35;
+        color: #FFFFFF;
+        padding: 10px;
+        text-align: center;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        border-bottom: 1px solid #000000;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: 50px;
+      }
+
+      header img {
+        width: auto;
+        height: auto;
+        max-height: 50px;
+        margin-right: 10px;
+      }
+
+      header .button {
+        background-color: #221C35;
+        color: #FFFFFF;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-right: 65px;
+      }
+      
+      img {
+        display: block;
+        margin: 0 auto;
+      }
+
+      .feature-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+      }
+      
+      .inicio {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        text-align: center;
+        padding: 2rem;
+        margin: 0 auto;
+        max-width: 1200px;
+        margin-top: 70px;
+      }
+      
+      .inicio h1 {
+        font-size: 4rem;
+        margin-top: 0;
+        margin-bottom: 2rem;
+      }
+      
+      .inicio p {
+        flex: 1;
+        margin-right: 2rem;
+      }
+      
+      .inicio img {
+        max-width: 100%;
+        max-height: 400px;
+        margin-bottom: 2rem;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .feature-item video {
+        width: 100%;
+        max-width: 800px;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+      }
+      
+      .feature-item video {
+        width: 100%;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+      
+      .feature-item img {
+        width: 100%;
+        max-width: 800px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+      
+      .feature-title {
+        font-size: 24px;
+        margin-top: 10px;
+        margin-bottom: 5px;
+      }
+      
+      .feature-description {
+        font-size: 16px;
+        color: #666;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      
+      p {
+        font-size: 24px;
+        color: #666666;
+        margin-top: 0;
+        margin-bottom: 50px;
+        line-height: 1.5;
+        text-align: center;
+      }
+      .button {
+        display: inline-block;
+        background-color: #225d9c;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-size: 18px;
+        font-weight: bold;
+        text-decoration: none;
+        margin-right: 20px;
+        margin-bottom: 20px;
+      }
+      .button:hover {
+        background-color: #12395f;
+      }
+      .login-button {
+        background-color: #00a6a6;
+        margin-right: 0;
+      }
+      .login-button:hover {
+        background-color: #008f8f;
+      }
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f2f2f2;
+      }
+      h1 {
+        margin-top: 80px;
+      }
+      h2 {
+        font-size: 36px;
+        font-weight: 500;
+        color: #333333;
+        margin-top: 50px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      h3 {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin-bottom: 1em;
+      }
+      .card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 40px;
+      }
+      .card img {
+        border-radius: 10px;
+        margin-bottom: 20px;
+        max-width: 100%;
+      }
+      .card h3 {
+        font-size: 24px;
+        font-weight: 500;
+        color: #333333;
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+      .card p {
+        font-size: 18px;
+        color: #666666;
+        margin-top: 0;
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .card-button {
+        background-color: #00a6a6;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        margin-top: 20px;
+        display: inline-block;
+      }
+      .card-button:hover {
+        background-color: #008f8f;
+      }
+      .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .centrar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f7f7f7;
+        }
+        
+        .enmarcar {
+        background-color: white;
+        border-radius: 10px;
+        padding: 30px;
+        }
+
+        @media (min-width: 768px) {
+          #scrolltable {
+          height: 400px;
+          }
+          }
+          
+          @media (max-width: 767px) {
+          #scrolltable {
+          height: auto;
+          }
+          }
+          
+          #scrolltable {
+          overflow: scroll;
+          max-height: 200px;
+          width: 100%;
+          }
+          
+          
+
+     /* Mobile */
+@media screen and (max-width: 576px) {
+  header {
+    padding: 5px;
+    font-size: 16px;
+    padding-left: 20px;
+    justify-content: center;
+  }
+  header img {
+    margin-right: 0;
+  }
+  header .button {
+    margin-right: 0;
+  }
+  .container {
+    padding: 10px;
+  }
+  .card {
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+}
+
+/* Tablet */
+@media screen and (min-width: 576px) and (max-width: 768px) {
+  header {
+    font-size: 20px;
+    padding-left: 30px;
+  }
+}
+
+/* Laptop */
+@media screen and (min-width: 992px) {
+  header {
+    padding: 10px;
+    font-size: 24px;
+  }
+  .container {
+    padding: 30px;
+  }
+  .card {
+    padding: 30px;
+    margin-bottom: 30px;
+  }
+  h1 {
+    margin-top: 120px;
+  }
+}
+
+/* Desktop */
+@media screen and (min-width: 1200px) {
+  .container {
+    max-width: 1400px;
+  }
+  .card-container {
+    max-width: 1400px;
+  }
+}
