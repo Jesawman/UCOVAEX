@@ -17,12 +17,12 @@
         </a>
             <h1 style="margin: 0;">UCOVAEX</h1>
             <div style="flex-grow: 1;"></div>
+            <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px;">Agregar Asignaturas</a>
             <form action="{{ url_for('logout') }}" method="post">
                 <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
             </form>
         </header>
     <div class="container">
-        <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px; position: fixed; top: 100px; right: 10px; padding: 10px; border-radius: 5px;">Agregar Asignaturas</a>
         <div class="row">
             <div class="col-md-12">
                 <h1>Valoración de Solicitudes</h1>
@@ -53,12 +53,12 @@
                                 <td>{{ solicitud['comentarios'] }}</td>
                                 <td>
                                     <form action="" method="post">
-                                        <input type="hidden" name="_id" value="{{ solicitud['_id'] }}">
+                                        <input type="hidden" name="_id" value="{{ solicitud[0] }}">
                                         <input type="hidden" name="estado" value="aceptada">
                                         <input type="submit" value="Aceptar" class="btn btn-primary">
-                                    </form>s
+                                    </form>
                                     <form action="" method="post">
-                                        <input type="hidden" name="_id" value="{{ solicitud['_id'] }}">
+                                        <input type="hidden" name="_id" value="{{ solicitud[0] }}">
                                         <input type="hidden" name="estado" value="denegada">
                                         <input type="submit" value="Denegar" class="btn btn-danger">
                                     </form>

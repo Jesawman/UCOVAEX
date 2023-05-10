@@ -199,7 +199,7 @@ def administracion():
     if request.method == 'POST':
         with get_db() as conn:
             c = conn.cursor()
-            c.execute('UPDATE solicitudes SET estado = ? WHERE codigo_solicitud = ?', 
+            c.execute('UPDATE solicitudes SET estado = ? WHERE id = ?', 
                         (request.form['estado'], request.form['_id']))
             conn.commit()
             flash('Solicitud actualizada')
