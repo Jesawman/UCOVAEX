@@ -270,6 +270,27 @@
     padding: 10px;
     margin-bottom: 20px;
   }
+
+  h1 {
+    margin-top: 80px;
+    font-size: 24px;
+    line-height: 1.2;
+    text-align: center;
+  }
+  
+  .inicio h1 {
+    font-size: 32px;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .inicio p {
+    display: none;
+    font-size: 16px;
+    line-height: 1.2;
+    text-align: center;
+  }
+
 }
 
 /* Tablet */
@@ -307,3 +328,5 @@
     max-width: 1400px;
   }
 }
+
+
