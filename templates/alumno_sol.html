@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ alumno }} - {{ destino }}</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <a href="/">
+            <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
+        </a>
+        <h1 style="margin: 0;">UCOVAEX</h1>
+        <div style="flex-grow: 1;"></div>
+        <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px;">Agregar Asignaturas</a>
+        <form action="{{ url_for('logout') }}" method="post">
+            <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+        </form>
+    </header>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Valoración de Solicitudes</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Solicitudes del alumno: {{ alumno }} - {{ destino }}</h2>
+            </div>
+        </div>
+        {% set asignatura_anterior = '' %}
+        {% for solicitud in solicitudes %}
+            {% if solicitud['asignatura_uco'] != asignatura_anterior %}
+                {% if loop.index != 1 %}
+                    </tbody>
+                    </table>
+                {% endif %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>{{ solicitud['asignatura_uco'] }}</h3>
+                    </div>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Asignatura UCO</th>
+                            <th>Código</th>
+                            <th>ECTS</th>
+                            <th>Asignaturas del Destino</th>
+                            <th>Código</th>
+                            <th>ECTS</th>
+                            <th>URL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            {% endif %}
+            <tr>
+                <td>{{ solicitud['asignatura_uco'] }}</td>
+                <td>{{ solicitud['codigo_uco'] }}</td>
+                <td>{{ solicitud['ects'] }}</td>
+                <td>{{ solicitud['asignaturas_destino'] }}</td>
+                <td>{{ solicitud['codigo_destino'] }}</td>
+                <td>{{ solicitud['ects_destino'] }}</td>
+                <td>{{ solicitud['url'] }}</td>
+            </tr>
+            {% set asignatura_anterior = solicitud['asignatura_uco'] %}
+            {% if loop.last %}
+                </tbody>
+                </table>
+            {% endif %}
+        {% endfor %}
+    </div>
+</body>
+</html>

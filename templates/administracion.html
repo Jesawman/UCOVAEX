@@ -34,35 +34,18 @@
                     <thead>
                         <tr>
                             <th>Nombre</th>
-                            <th>Asignatura UCO</th>
-                            <th>Asignatura Extranjero</th>
+                            <th>Destino</th>
                             <th>Fecha</th>
                             <th>Estado</th>
-                            <th>Comentarios</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for solicitud in solicitudes %}
                             <tr>
-                                <td>{{ solicitud['apellidos_y_nombre_alumno'] }}</td>
-                                <td>{{ get_nombre_asignatura_uco(solicitud['codigo_asignatura_uco']) }}</td>
-                                <td>{{ get_nombre_asignatura_exterior(solicitud['codigo_asignatura_extranjero']) }}</td>
-                                <td>{{ solicitud['fecha_solicitud'] }}</td>
+                                <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
+                                <td>{{ solicitud['nombre_destino'] }}</td>
+                                <td>{{ solicitud['fecha'] }}</td>
                                 <td>{{ solicitud['estado'] }}</td>
-                                <td>{{ solicitud['comentarios'] }}</td>
-                                <td>
-                                    <form action="" method="post">
-                                        <input type="hidden" name="_id" value="{{ solicitud[0] }}">
-                                        <input type="hidden" name="estado" value="aceptada">
-                                        <input type="submit" value="Aceptar" class="btn btn-primary">
-                                    </form>
-                                    <form action="" method="post">
-                                        <input type="hidden" name="_id" value="{{ solicitud[0] }}">
-                                        <input type="hidden" name="estado" value="denegada">
-                                        <input type="submit" value="Denegar" class="btn btn-danger">
-                                    </form>
-                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>

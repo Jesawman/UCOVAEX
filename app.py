@@ -1,9 +1,12 @@
-import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, flash,session
 import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+import sqlite3
 import threading
+
+from flask import (Flask, flash, redirect, render_template, request, session,
+                   url_for)
+from flask_login import (LoginManager, current_user, login_required,
+                         login_user, logout_user)
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'secretkey'
@@ -49,7 +52,7 @@ def close_db(error):
 @app.before_request
 def make_session_permanent():
     session.permanent = True
-    app.permanent_session_lifetime = datetime.timedelta(minutes=5)
+    app.permanent_session_lifetime = datetime.timedelta(minutes=60)
 
 @app.after_request
 def add_header(response):
@@ -58,7 +61,6 @@ def add_header(response):
     response.headers['Expires'] = '0'
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -117,28 +119,37 @@ def register():
     
     return render_template('register.html')
 
+asignaturas = []
+
 @app.route('/solicitud', methods=['GET', 'POST'])
-@login_required
 def solicitud():
     if request.method == 'POST':
-        with get_db() as conn:
-            c = conn.cursor()
-            c.execute("INSERT INTO solicitudes(apellidos_y_nombre_alumno, codigo_asignatura_uco, codigo_asignatura_extranjero, codigo_solicitud, fecha_solicitud, estado, comentarios) VALUES (?, ?, ?, ?, ?, ?, ?)", (request.form['nombre'], request.form['asignatura_uco'], request.form['asignatura_extranjero'], c.execute('SELECT COUNT(*) FROM solicitudes').fetchone()[0] + 1, datetime.datetime.now(), "Por aprobar", ""))
-            conn.commit()
-            flash('Solicitud enviada')
-            return redirect(url_for('solicitud'))
-    
-    with get_db() as conn:
-        c = conn.cursor()
-        # Obtener todas las solicitudes del usuario actual
-        solicitudes = c.execute("SELECT * FROM solicitudes WHERE apellidos_y_nombre_alumno = ?", (current_user.get_id(),)).fetchall()
-        # Obtener todas las asignaturas UCO
-        asignaturas_uco = c.execute("SELECT * FROM asignaturas_uco").fetchall()
-        # Obtener todas las asignaturas en el extranjero
-        asignaturas_exterior = c.execute("SELECT * FROM asignaturas_exterior").fetchall()
-    
-    # Renderizar la plantilla solicitud.html y pasar las solicitudes y asignaturas a ella
-    return render_template('solicitud.html', solicitudes=solicitudes, asignaturas_uco=asignaturas_uco, asignaturas_exterior=asignaturas_exterior)
+        if 'nombre' in request.form:
+            titulacion = request.form.get('titulacion')
+            codigo = request.form.get('codigo')
+            nombre = request.form.get('nombre')
+            ects = request.form.get('ects')
+            destino = request.form.get('destino')
+            duracion = request.form.get('duracion')
+
+            return render_template('solicitud.html', titulacion=titulacion, codigo=codigo, nombre=nombre, ects=ects,
+                                    destino=destino, duracion=duracion, mostrar_tabla=True, asignaturas=asignaturas)
+        elif 'nombre-asignatura' in request.form:
+            nombre_asignatura = request.form.get('nombre-asignatura')
+            codigo_asignatura = request.form.get('codigo-asignatura')
+            ects_asignatura = request.form.get('ects-asignatura')
+            url_asignatura = request.form.get('url-asignatura')
+
+            asignaturas.append({
+                'nombre': nombre_asignatura,
+                'codigo': codigo_asignatura,
+                'ects': ects_asignatura,
+                'url': url_asignatura
+            })
+
+            return render_template('solicitud.html', mostrar_formulario_asignatura=True, asignaturas=asignaturas)
+
+    return render_template('solicitud.html')
 
 @app.route('/solicitud/<int:id>/eliminar', methods=['GET'])
 @login_required
@@ -177,6 +188,54 @@ def get_nombre_asignatura_exterior(codigo_asignatura_extranjero):
         return None
 app.jinja_env.globals.update(get_nombre_asignatura_exterior=get_nombre_asignatura_exterior)
 
+from flask import redirect, url_for
+
+
+@app.route('/enviar-solicitud', methods=['POST'])
+def enviar_solicitud():
+    solicitud = request.get_json()
+    datos = solicitud['datos']
+    asignaturas = solicitud['asignaturas']
+
+    with get_db() as conn:
+        c = conn.cursor()
+
+        for dato in datos:
+            titulacion = dato['titulacion']
+            codigo = dato['codigo']
+            nombre = dato['nombre']
+            ects = dato['ects']
+            destino = dato['destino']
+            duracion = dato['duracion']
+
+            c.execute("INSERT INTO asignatura_eps (titulacion, codigo, nombre, ects, destino, duracion) VALUES (?, ?, ?, ?, ?, ?)",
+                      (titulacion, codigo, nombre, ects, destino, duracion))
+
+            asignatura_eps_id = c.lastrowid
+            c.execute("SELECT codigo, nombre FROM asignatura_eps WHERE id = ?", (asignatura_eps_id,))
+            row = c.fetchone()
+            codigo_eps = row[0]
+            nombre_eps = row[1]
+
+            for asignatura in asignaturas:
+                nombre_destino = asignatura['nombre']
+                codigo_destino = asignatura['codigo']
+                ects_destino = asignatura['ects']
+                url = asignatura['url']
+
+                c.execute("INSERT INTO asignatura_destino (codigo, nombre, ects, url) VALUES (?, ?, ?, ?)",
+                      (codigo, nombre, ects_destino, url))
+                
+                c.execute("INSERT INTO relacion_asignaturas (codigo_eps, nombre_eps, codigo_destino, nombre_destino) VALUES (?, ?, ?, ?)",
+                          (codigo_eps, nombre_eps, codigo_destino, nombre_destino))
+                
+                c.execute("INSERT INTO relacion_asignaturas_alumnos (usuario, codigo_eps, nombre_eps, codigo_destino, nombre_destino, estado) VALUES (?, ?, ?, ?, ?, ?)",
+                          (current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente"))
+
+        conn.commit()
+
+    return redirect(url_for('solicitud'))
+
 @app.route('/comentarios', methods=['GET', 'POST'])
 @login_required
 def comentarios():
@@ -206,10 +265,91 @@ def administracion():
             return redirect(url_for('administracion'))
     with get_db() as conn:
         c = conn.cursor()
-        solicitudes= c.execute('SELECT * FROM solicitudes').fetchall()
+
+        c.execute('''
+            SELECT usuario, nombre_destino,MAX(fecha) AS fecha, estado
+            FROM relacion_asignaturas_alumnos
+            GROUP BY usuario
+            ORDER BY usuario ASC
+        ''')
+        solicitudes = c.fetchall()
         
         return render_template('administracion.html', solicitudes=solicitudes)
+    
+def obtener_ects_asignatura(codigo_asignatura):
+    connection = get_db()
+    cursor = connection.cursor()
 
+    cursor.execute("SELECT ects FROM asignatura_eps WHERE codigo = ?", (codigo_asignatura,))
+    ects = cursor.fetchone()
+
+    if not ects:
+        cursor.execute("SELECT ects FROM asignatura_destino WHERE codigo = ?", (codigo_asignatura,))
+        ects = cursor.fetchone()
+
+    connection.close()
+
+    return ects[0] if ects else None
+
+def obtener_url_asignatura(codigo_destino):
+    connection = get_db()
+    cursor = connection.cursor()
+    cursor.execute("SELECT url FROM asignatura_destino WHERE codigo = ?", (codigo_destino,))
+    result = cursor.fetchone()
+    url = result[0] if result else None
+    connection.close()
+    return url
+
+@app.route('/usuario/<nombre_usuario>')
+def mostrar_solicitudes_usuario(nombre_usuario):
+    connection = get_db()
+    cursor = connection.cursor()
+    cursor.execute("SELECT usuario FROM relacion_asignaturas_alumnos WHERE usuario = ?", (nombre_usuario,))
+    alumno = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT destino
+        FROM asignatura_eps
+        WHERE codigo IN (
+            SELECT codigo_destino
+            FROM relacion_asignaturas_alumnos
+            WHERE usuario = ?
+        )
+        LIMIT 1
+    """, (nombre_usuario,))
+    destino_result = cursor.fetchone()
+    destino = destino_result[0] if destino_result else None
+
+    cursor.execute("""
+        SELECT nombre_eps, codigo_eps, nombre_destino, codigo_destino
+        FROM relacion_asignaturas_alumnos
+        WHERE usuario = ?
+    """, (nombre_usuario,))
+    solicitudes = cursor.fetchall()
+
+    solicitudes_con_ects_url = []
+    for solicitud in solicitudes:
+        solicitud_dict = dict(solicitud)
+        codigo_eps = solicitud_dict['codigo_eps']
+        ects_eps = obtener_ects_asignatura(codigo_eps)
+
+        codigo_destino = solicitud_dict['codigo_destino']
+        ects_destino = obtener_ects_asignatura(codigo_destino)
+        url_destino = obtener_url_asignatura(codigo_destino)
+
+        solicitud_dict['asignatura_uco'] = solicitud_dict['nombre_eps']
+        solicitud_dict['codigo_uco'] = codigo_eps
+        solicitud_dict['ects'] = ects_eps
+        solicitud_dict['asignaturas_destino'] = solicitud_dict['nombre_destino']
+        solicitud_dict['codigo_destino'] = codigo_destino
+        solicitud_dict['ects_destino'] = ects_destino
+        solicitud_dict['url'] = url_destino
+
+        solicitudes_con_ects_url.append(solicitud_dict)
+
+    connection.close()
+
+    return render_template('alumno_sol.html', alumno=alumno, destino=destino, solicitudes=solicitudes_con_ects_url)
 
 @app.route('/agregar_asignatura', methods=['GET', 'POST'])
 @login_required
