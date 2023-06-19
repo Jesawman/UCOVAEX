@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,47 +33,101 @@
                 <h2>Solicitudes del alumno: {{ alumno }} - {{ destino }}</h2>
             </div>
         </div>
-        {% set asignatura_anterior = '' %}
-        {% for solicitud in solicitudes %}
-            {% if solicitud['asignatura_uco'] != asignatura_anterior %}
-                {% if loop.index != 1 %}
-                    </tbody>
-                    </table>
-                {% endif %}
-                <div class="row">
-                    <div class="col-md-12">
-                        <h3>{{ solicitud['asignatura_uco'] }}</h3>
-                    </div>
+        {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
+            <div class="row">
+                <div class="col-md-12">
+                    <h3>{{ asignatura_uco }}</h3>
                 </div>
-                <table class="table">
-                    <thead>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Asignatura UCO</th>
+                        <th>Código</th>
+                        <th>ECTS</th>
+                        <th>Asignaturas del Destino</th>
+                        <th>Código</th>
+                        <th>ECTS</th>
+                        <th>URL</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for solicitud in solicitudes_destino %}
                         <tr>
-                            <th>Asignatura UCO</th>
-                            <th>Código</th>
-                            <th>ECTS</th>
-                            <th>Asignaturas del Destino</th>
-                            <th>Código</th>
-                            <th>ECTS</th>
-                            <th>URL</th>
+                            {% if loop.index == 1 %}
+                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ asignatura_uco }}</td>
+                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['codigo_uco'] }}</td>
+                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['ects_uco'] }}</td>
+                            {% endif %}
+                            <td class="align-middle">{{ solicitud['nombre_destino'] }}</td>
+                            <td class="align-middle">{{ solicitud['codigo_destino'] }}</td>
+                            <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
+                            <td class="align-middle">{{ solicitud['url'] }}</td>
+                            <td class="align-middle">{{ solicitud['estado'] }}</td>
+                            {% if loop.index == 1 %}
+                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                    <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
+                                    <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
+                                    <button type="button" class="btn btn-primary" onclick="enviarComision('{{ solicitud['codigo_uco'] }}')">Enviar</button>
+                                </td>
+                            {% endif %}
                         </tr>
-                    </thead>
-                    <tbody>
-            {% endif %}
-            <tr>
-                <td>{{ solicitud['asignatura_uco'] }}</td>
-                <td>{{ solicitud['codigo_uco'] }}</td>
-                <td>{{ solicitud['ects'] }}</td>
-                <td>{{ solicitud['asignaturas_destino'] }}</td>
-                <td>{{ solicitud['codigo_destino'] }}</td>
-                <td>{{ solicitud['ects_destino'] }}</td>
-                <td>{{ solicitud['url'] }}</td>
-            </tr>
-            {% set asignatura_anterior = solicitud['asignatura_uco'] %}
-            {% if loop.last %}
+                    {% endfor %}
                 </tbody>
-                </table>
-            {% endif %}
+            </table>
         {% endfor %}
     </div>
 </body>
 </html>
+
+<script>
+    function aprobarSolicitud(codigo_uco) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/aprobar';
+
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'codigo_uco';
+        input.value = codigo_uco;
+
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function denegarSolicitud(codigo_uco) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/denegar';
+
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'codigo_uco';
+        input.value = codigo_uco;
+
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function enviarComision(codigo_uco) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/enviar';
+
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'codigo_uco';
+        input.value = codigo_uco;
+
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>

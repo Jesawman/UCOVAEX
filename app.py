@@ -224,7 +224,7 @@ def enviar_solicitud():
                 url = asignatura['url']
 
                 c.execute("INSERT INTO asignatura_destino (codigo, nombre, ects, url) VALUES (?, ?, ?, ?)",
-                      (codigo, nombre, ects_destino, url))
+                      (codigo_destino, nombre_destino, ects_destino, url))
                 
                 c.execute("INSERT INTO relacion_asignaturas (codigo_eps, nombre_eps, codigo_destino, nombre_destino) VALUES (?, ?, ?, ?)",
                           (codigo_eps, nombre_eps, codigo_destino, nombre_destino))
@@ -251,14 +251,13 @@ def comentarios():
         solicitudes = c.execute("SELECT * FROM solicitudes").fetchall()
     return render_template('comentarios.html', solicitudes=solicitudes)
 
-
 @app.route('/administracion', methods=['GET', 'POST'])
 @login_required
 def administracion():
     if request.method == 'POST':
         with get_db() as conn:
             c = conn.cursor()
-            c.execute('UPDATE solicitudes SET estado = ? WHERE id = ?', 
+            c.execute('UPDATE solicitudes SET estado = ? WHERE id = ?',
                         (request.form['estado'], request.form['_id']))
             conn.commit()
             flash('Solicitud actualizada')
@@ -276,29 +275,44 @@ def administracion():
         
         return render_template('administracion.html', solicitudes=solicitudes)
     
+def obtener_url_asignatura(codigo_asignatura):
+    connection = get_db()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT url
+        FROM asignatura_destino
+        WHERE codigo = ?
+    """, (codigo_asignatura,))
+    url_result = cursor.fetchone()
+    url = url_result[0] if url_result else None
+    
+    connection.close()
+    return url
+
 def obtener_ects_asignatura(codigo_asignatura):
     connection = get_db()
     cursor = connection.cursor()
 
-    cursor.execute("SELECT ects FROM asignatura_eps WHERE codigo = ?", (codigo_asignatura,))
-    ects = cursor.fetchone()
+    cursor.execute("""
+        SELECT ects
+        FROM asignatura_eps
+        WHERE codigo = ?
+    """, (codigo_asignatura,))
+    ects_result = cursor.fetchone()
 
-    if not ects:
-        cursor.execute("SELECT ects FROM asignatura_destino WHERE codigo = ?", (codigo_asignatura,))
-        ects = cursor.fetchone()
-
+    if ects_result:
+        ects = ects_result[0]
+    else:
+        cursor.execute("""
+            SELECT ects
+            FROM asignatura_destino
+            WHERE codigo = ?
+        """, (codigo_asignatura,))
+        ects_result = cursor.fetchone()
+        ects = ects_result[0] if ects_result else None
     connection.close()
-
-    return ects[0] if ects else None
-
-def obtener_url_asignatura(codigo_destino):
-    connection = get_db()
-    cursor = connection.cursor()
-    cursor.execute("SELECT url FROM asignatura_destino WHERE codigo = ?", (codigo_destino,))
-    result = cursor.fetchone()
-    url = result[0] if result else None
-    connection.close()
-    return url
+    return ects
 
 @app.route('/usuario/<nombre_usuario>')
 def mostrar_solicitudes_usuario(nombre_usuario):
@@ -321,35 +335,97 @@ def mostrar_solicitudes_usuario(nombre_usuario):
     destino = destino_result[0] if destino_result else None
 
     cursor.execute("""
-        SELECT nombre_eps, codigo_eps, nombre_destino, codigo_destino
+        SELECT nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado
         FROM relacion_asignaturas_alumnos
         WHERE usuario = ?
+        ORDER BY nombre_eps
     """, (nombre_usuario,))
     solicitudes = cursor.fetchall()
 
-    solicitudes_con_ects_url = []
+    connection.close()
+
+    grupos_solicitudes = {}
     for solicitud in solicitudes:
-        solicitud_dict = dict(solicitud)
-        codigo_eps = solicitud_dict['codigo_eps']
-        ects_eps = obtener_ects_asignatura(codigo_eps)
+        nombre_eps = solicitud[0]
+        codigo_eps = solicitud[1]
+        nombre_destino = solicitud[2]
+        codigo_destino = solicitud[3]
+        estado =  solicitud[4]
 
-        codigo_destino = solicitud_dict['codigo_destino']
-        ects_destino = obtener_ects_asignatura(codigo_destino)
-        url_destino = obtener_url_asignatura(codigo_destino)
+        asignatura_uco = nombre_eps if nombre_eps else codigo_eps
 
-        solicitud_dict['asignatura_uco'] = solicitud_dict['nombre_eps']
-        solicitud_dict['codigo_uco'] = codigo_eps
-        solicitud_dict['ects'] = ects_eps
-        solicitud_dict['asignaturas_destino'] = solicitud_dict['nombre_destino']
-        solicitud_dict['codigo_destino'] = codigo_destino
-        solicitud_dict['ects_destino'] = ects_destino
-        solicitud_dict['url'] = url_destino
+        if asignatura_uco in grupos_solicitudes:
+            grupos_solicitudes[asignatura_uco].append({
+                'nombre_uco': nombre_eps,
+                'codigo_uco': codigo_eps,
+                'nombre_destino': nombre_destino,
+                'codigo_destino': codigo_destino,
+                'ects_uco': obtener_ects_asignatura(codigo_eps),
+                'ects_destino': obtener_ects_asignatura(codigo_destino),
+                'url': obtener_url_asignatura(codigo_destino),
+                'estado': estado
 
-        solicitudes_con_ects_url.append(solicitud_dict)
+            })
+        else:
+            grupos_solicitudes[asignatura_uco] = [{
+                'nombre_uco': nombre_eps,
+                'codigo_uco': codigo_eps,
+                'nombre_destino': nombre_destino,
+                'codigo_destino': codigo_destino,
+                'ects_uco': obtener_ects_asignatura(codigo_eps),
+                'ects_destino': obtener_ects_asignatura(codigo_destino),
+                'url': obtener_url_asignatura(codigo_destino),
+                'estado': estado
+            }]
+
+    return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes)
+
+@app.route('/aprobar', methods=['POST'])
+def aprobar_solicitud():
+    codigo_uco = request.form['codigo_uco']
+
+    connection = get_db()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE relacion_asignaturas_alumnos SET estado = 'aprobado' WHERE codigo_eps = ?", (codigo_uco,))
+    connection.commit()
 
     connection.close()
 
-    return render_template('alumno_sol.html', alumno=alumno, destino=destino, solicitudes=solicitudes_con_ects_url)
+    flash('Solicitud aprobada con éxito', 'success')
+    return redirect(request.referrer)
+
+
+@app.route('/denegar', methods=['POST'])
+def denegar_solicitud():
+    codigo_uco = request.form['codigo_uco']
+
+    connection = get_db()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE relacion_asignaturas_alumnos SET estado = 'denegado' WHERE codigo_eps = ?", (codigo_uco,))
+    connection.commit()
+
+    connection.close()
+
+    flash('Solicitud denegada', 'danger')
+    return redirect(request.referrer)
+
+
+@app.route('/enviar', methods=['POST'])
+def enviar_comision():
+    codigo_uco = request.form['codigo_uco']
+
+    connection = get_db()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE relacion_asignaturas_alumnos SET estado = 'enviada' WHERE codigo_eps = ?", (codigo_uco,))
+    connection.commit()
+
+    connection.close()
+
+    flash('Solicitud enviada', 'info')
+    return redirect(request.referrer)
 
 @app.route('/agregar_asignatura', methods=['GET', 'POST'])
 @login_required
@@ -376,8 +452,6 @@ def logout():
     logged_in = False
     flash('Has cerrado sesión.')
     return redirect(url_for('index'))
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
