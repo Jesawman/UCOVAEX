@@ -37,7 +37,7 @@ def load_user(username):
 
 @app.route('/')
 def index():
-    return render_template('index.html', logged_in=logged_in)
+    return redirect(url_for('login'))
 
 def get_db():
     conn = sqlite3.connect('database.db')

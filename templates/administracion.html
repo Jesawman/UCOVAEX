@@ -1,27 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Adminstrar Solicitudes</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" >
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <title>Administrar Solicitudes</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
     <header>
         <a href="/">
             <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
         </a>
-            <h1 style="margin: 0;">UCOVAEX</h1>
-            <div style="flex-grow: 1;"></div>
-            <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px;">Agregar Asignaturas</a>
-            <form action="{{ url_for('logout') }}" method="post">
-                <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
-            </form>
-        </header>
+        <h1 style="margin: 0;">UCOVAEX</h1>
+        <div style="flex-grow: 1;"></div>
+        <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px;">Agregar Asignaturas</a>
+        <form action="{{ url_for('logout') }}" method="post">
+            <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+        </form>
+    </header>
     <div class="container">
         <div class="row">
             <div class="col-md-12">
@@ -30,28 +35,58 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <table class="table">
+                <table id="table" class="table"
+                    data-toggle="table"
+                    data-search="true"
+                    data-filter-control="true"
+                    data-show-export="true"
+                    data-click-to-select="true"
+                    data-toolbar="#toolbar">
                     <thead>
                         <tr>
-                            <th>Nombre</th>
-                            <th>Destino</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
+                            <th data-field="state" data-checkbox="true"></th>
+                            <th data-field="usuario" data-filter-control="input" data-sortable="true">Nombre</th>
+                            <th data-field="nombre_destino" data-filter-control="select" data-sortable="true">Destino</th>
+                            <th data-field="fecha" data-filter-control="select" data-sortable="true">Fecha</th>
+                            <th data-field="estado" data-sortable="true">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for solicitud in solicitudes %}
-                            <tr>
-                                <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
-                                <td>{{ solicitud['nombre_destino'] }}</td>
-                                <td>{{ solicitud['fecha'] }}</td>
-                                <td>{{ solicitud['estado'] }}</td>
-                            </tr>
+                        <tr>
+                            <td class="bs-checkbox "><input data-index="{{ loop.index0 }}" name="btSelectItem" type="checkbox"></td>
+                            <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
+                            <td>{{ solicitud['nombre_destino'] }}</td>
+                            <td>{{ solicitud['fecha'] }}</td>
+                            <td>{{ solicitud['estado'] }}</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha384-XXX"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-pzjw8f+ua6vWPhhYclhWAr+HKe4fX+zEhq6IHONtNvID7TdCfz6q4W+djOARsPBd"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.10.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var $table = $('#table');
+
+            $('#toolbar').find('select').change(function () {
+                $table.bootstrapTable('refreshOptions', {
+                    exportDataType: $(this).val()
+                });
+            });
+        });
+    </script>
 </body>
+
 </html>
