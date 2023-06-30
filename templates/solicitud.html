@@ -1,263 +1,291 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Crear Solicitud</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" >
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-    <link rel="stylesheet" href="/static/css/style.css">
-    <script>
-        function mostrarTabla() {
-            document.getElementById('formulario-EPS').style.display = 'none';
-            document.getElementById('formulario-destino').style.display = 'flex';
-            var titulacion = document.getElementById('titulacion').value;
-            var codigo = document.getElementById('codigo').value;
-            var nombre = document.getElementById('nombre').value;
-            var ects = document.getElementById('ects').value;
-            var destino = document.getElementById('destino').value;
-            var duracion = document.getElementById('duracion').value;
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Crear Solicitud</title>
+        <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" >
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+        <link rel="stylesheet" href="/static/css/style.css">
+        <script>
+            function mostrarTabla() {
+                document.getElementById('formulario-EPS').style.display = 'none';
+                document.getElementById('formulario-destino').style.display = 'flex';
+                var titulacion = document.getElementById('titulacion').value;
+                var codigo = document.getElementById('codigo').value;
+                var nombre = document.getElementById('nombre').value;
+                var ects = document.getElementById('ects').value;
+                var destino = document.getElementById('destino').value;
+                var duracion = document.getElementById('duracion').value;
 
-            var table = document.getElementById('datos-table');
-            var tbody = table.getElementsByTagName('tbody')[0];
-            var newRow = tbody.insertRow();
+                var table = document.getElementById('datos-table');
+                var tbody = table.getElementsByTagName('tbody')[0];
+                var newRow = tbody.insertRow();
 
-            newRow.insertCell().innerText = titulacion;
-            newRow.insertCell().innerText = codigo;
-            newRow.insertCell().innerText = nombre;
-            newRow.insertCell().innerText = ects;
-            newRow.insertCell().innerText = destino;
-            newRow.insertCell().innerText = duracion;
+                newRow.insertCell().innerText = titulacion;
+                newRow.insertCell().innerText = codigo;
+                newRow.insertCell().innerText = nombre;
+                newRow.insertCell().innerText = ects;
+                newRow.insertCell().innerText = destino;
+                newRow.insertCell().innerText = duracion;
 
-            document.getElementById('tabla-datos').style.display = 'block';
-        }
-
-        function agregarAsignatura() {
-            var nombreAsignatura = document.getElementById('nombre-asignatura').value;
-            var codigoAsignatura = document.getElementById('codigo-asignatura').value;
-            var ectsAsignatura = document.getElementById('ects-asignatura').value;
-            var urlAsignatura = document.getElementById('url-asignatura').value;
-
-            var table = document.getElementById('asignaturas-table');
-            var tbody = table.getElementsByTagName('tbody')[0];
-            var newRow = tbody.insertRow();
-
-            newRow.insertCell().innerText = nombreAsignatura;
-            newRow.insertCell().innerText = codigoAsignatura;
-            newRow.insertCell().innerText = ectsAsignatura;
-            newRow.insertCell().innerText = urlAsignatura;
-
-            document.getElementById('nombre-asignatura').value = '';
-            document.getElementById('codigo-asignatura').value = '';
-            document.getElementById('ects-asignatura').value = '';
-            document.getElementById('url-asignatura').value = '';
-            document.getElementById('tabla-asignaturas').style.display = 'block';
-        }
-        
-        function enviarSolicitud() {
-            var table = document.getElementById('datos-table');
-            var tbody = table.getElementsByTagName('tbody')[0];
-            var rows = tbody.getElementsByTagName('tr');
-            var datos = [];
-
-            for (var i = 0; i < rows.length; i++) {
-                var row = rows[i];
-                var titulacion = row.cells[0].innerText;
-                var codigo = row.cells[1].innerText;
-                var nombre = row.cells[2].innerText;
-                var ects = row.cells[3].innerText;
-                var destino = row.cells[4].innerText;
-                var duracion = row.cells[5].innerText;
-
-                datos.push({
-                    titulacion: titulacion,
-                    codigo: codigo,
-                    nombre: nombre,
-                    ects: ects,
-                    destino: destino,
-                    duracion: duracion
-                });
+                document.getElementById('tabla-datos').style.display = 'block';
             }
 
-            var asignaturasTable = document.getElementById('asignaturas-table');
-            var asignaturasTbody = asignaturasTable.getElementsByTagName('tbody')[0];
-            var asignaturasRows = asignaturasTbody.getElementsByTagName('tr');
-            var asignaturas = [];
+            function agregarAsignatura() {
+                var nombreAsignatura = document.getElementById('nombre-asignatura').value;
+                var codigoAsignatura = document.getElementById('codigo-asignatura').value;
+                var ectsAsignatura = document.getElementById('ects-asignatura').value;
+                var urlAsignatura = document.getElementById('url-asignatura').value;
 
-            for (var j = 0; j < asignaturasRows.length; j++) {
-                var asignaturaRow = asignaturasRows[j];
-                var nombreAsignatura = asignaturaRow.cells[0].innerText;
-                var codigoAsignatura = asignaturaRow.cells[1].innerText;
-                var ectsAsignatura = asignaturaRow.cells[2].innerText;
-                var urlAsignatura = asignaturaRow.cells[3].innerText;
+                var table = document.getElementById('asignaturas-table');
+                var tbody = table.getElementsByTagName('tbody')[0];
+                var newRow = tbody.insertRow();
 
-                asignaturas.push({
-                    nombre: nombreAsignatura,
-                    codigo: codigoAsignatura,
-                    ects: ectsAsignatura,
-                    url: urlAsignatura
-                });
+                newRow.insertCell().innerText = nombreAsignatura;
+                newRow.insertCell().innerText = codigoAsignatura;
+                newRow.insertCell().innerText = ectsAsignatura;
+                newRow.insertCell().innerText = urlAsignatura;
+
+                document.getElementById('nombre-asignatura').value = '';
+                document.getElementById('codigo-asignatura').value = '';
+                document.getElementById('ects-asignatura').value = '';
+                document.getElementById('url-asignatura').value = '';
+                document.getElementById('tabla-asignaturas').style.display = 'block';
             }
+            
+            function enviarSolicitud() {
+                var table = document.getElementById('datos-table');
+                var tbody = table.getElementsByTagName('tbody')[0];
+                var rows = tbody.getElementsByTagName('tr');
+                var datos = [];
 
-            var solicitud = {
-                datos: datos,
-                asignaturas: asignaturas
-            };
+                for (var i = 0; i < rows.length; i++) {
+                    var row = rows[i];
+                    var titulacion = row.cells[0].innerText;
+                    var codigo = row.cells[1].innerText;
+                    var nombre = row.cells[2].innerText;
+                    var ects = row.cells[3].innerText;
+                    var destino = row.cells[4].innerText;
+                    var duracion = row.cells[5].innerText;
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/enviar-solicitud', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    alert('Solicitud enviada correctamente');
-                    document.getElementById('formulario-EPS').reset();
-                    document.getElementById('formulario-destino').reset();
-                    tbody.innerHTML = '';
-                    asignaturasTbody.innerHTML = '';
-                    document.getElementById('tabla-datos').style.display = 'none';
-                    document.getElementById('tabla-asignaturas').style.display = 'none';
+                    datos.push({
+                        titulacion: titulacion,
+                        codigo: codigo,
+                        nombre: nombre,
+                        ects: ects,
+                        destino: destino,
+                        duracion: duracion
+                    });
                 }
+
+                var asignaturasTable = document.getElementById('asignaturas-table');
+                var asignaturasTbody = asignaturasTable.getElementsByTagName('tbody')[0];
+                var asignaturasRows = asignaturasTbody.getElementsByTagName('tr');
+                var asignaturas = [];
+
+                for (var j = 0; j < asignaturasRows.length; j++) {
+                    var asignaturaRow = asignaturasRows[j];
+                    var nombreAsignatura = asignaturaRow.cells[0].innerText;
+                    var codigoAsignatura = asignaturaRow.cells[1].innerText;
+                    var ectsAsignatura = asignaturaRow.cells[2].innerText;
+                    var urlAsignatura = asignaturaRow.cells[3].innerText;
+
+                    asignaturas.push({
+                        nombre: nombreAsignatura,
+                        codigo: codigoAsignatura,
+                        ects: ectsAsignatura,
+                        url: urlAsignatura
+                    });
+                }
+
+                var solicitud = {
+                    datos: datos,
+                    asignaturas: asignaturas
+                };
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/enviar-solicitud', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                        alert('Solicitud enviada correctamente');
+                        document.getElementById('formulario-EPS').reset();
+                        document.getElementById('formulario-destino').reset();
+                        tbody.innerHTML = '';
+                        asignaturasTbody.innerHTML = '';
+                        document.getElementById('tabla-datos').style.display = 'none';
+                        document.getElementById('tabla-asignaturas').style.display = 'none';
+                    }
+                };
+                xhr.send(JSON.stringify(solicitud));
+            }
+
+            window.onload = function() {
+                document.getElementById('formulario-EPS').reset();
+                document.getElementById('formulario-destino').reset();
             };
-            xhr.send(JSON.stringify(solicitud));
-        }
+        </script>
+        <style>
+            .inner-header {
+                height: 20vh;
+                width: 100%;
+                margin: 0;
+                padding: 5%;
+                display: flex;
+                justify-content: left;
+                align-items: left;
+                text-align: left;
+            }
+            .content {
+                height: 80vh;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="inner-header">
+                <h1>UCOVAEX</h1>
+            </div>
 
-        window.onload = function() {
-            document.getElementById('formulario-EPS').reset();
-            document.getElementById('formulario-destino').reset();
-        };
-    </script>
-</head>
-<body>
-    <header>
-        <a href="/">
-            <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
-        </a>
-        <h1 style="margin: 0;">UCOVAEX</h1>
-        <div style="flex-grow: 1;"></div>
-        <form action="{{ url_for('logout') }}" method="post">
-            <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
-        </form>
-    </header>
-    <div class="container">
-        <h1>Solicitud</h1>
-        <form id="formulario-EPS" action="" method="post" style="display: flex; justify-content: left;">
-            <div style="display: flex; flex-direction: column; margin-right: 20px;">
-                <div class="form-group">
-                    <h2>Asignatura a Convalidar</h2>
-                    <label for="titulacion">Titulación</label>
-                    <select name="titulacion" id="titulacion" class="form-control">
-                    <option>Grado Ingeniería Eléctrica</option>
-                    <option>Grado Ingeniería Electrónica Industrial</option>
-                    <option>Grado Ingeniería Mecánica</option>
-                    <option>Grado Ingeniería Informática</option>
-                    <option>Doble Grado Ingeniería Energía y Rec. Minerales e Ing. Eléctrica</option>
-                    </select>
-                    <label for="codigo">Código</label>
-                    <input type="text" name="codigo" id="codigo" class="form-control">
-                    <label for="nombre">Nombre</label>
-                    <input type="text" name="nombre" id="nombre" class="form-control">
-                    <label for="ects">ECTS</label>
-                    <input type="text" name="ects" id="ects" class="form-control">
-                </div>
-            </div>
-            <div id="formulario-EPS" action="" method="post" style="display: flex; flex-direction: column; margin-left: 60px;">
-                <div class="form-group">
-                    <h2>Datos del viaje</h2>
-                    <label for="destino">Destino</label>
-                    <select name="destino" id="destino" class="form-control">
-                        <option>Francia</option>
-                        <option>Inglaterra</option>
-                        <option>Italia</option>
-                    </select>
-                    <label for="duracion">Duración</label>
-                    <select name="duracion" id="duracion" class="form-control">
-                        <option>1er cuatrimestre</option>
-                        <option>2o cuatrimestre</option>
-                        <option>Todo el año</option>
-                    </select>
-                    <input type="button" value="Siguiente" class="btn btn-primary" style="margin-top: 10px;" onclick="mostrarTabla()">
-                </div>
-            </div>
-        </form>
-        <div class="container">
-        <form action="" method="post" id="formulario-destino" style="display: none;">
-            <div style="display: flex; flex-direction: column; margin-right: 20px;">
-                <div class="form-group">
-                    <h2>Asignatura Destino</h2>
-                    <label for="nombre-asignatura">Nombre</label>
-                    <input type="text" name="nombre-asignatura" id="nombre-asignatura" class="form-control">
-                    <label for="codigo-asignatura">Código</label>
-                    <input type="text" name="codigo-asignatura" id="codigo-asignatura" class="form-control">
-                    <label for="ects-asignatura">ECTS</label>
-                    <input type="text" name="ects-asignatura" id="ects-asignatura" class="form-control">
-                    <label for="url-asignatura">URL</label>
-                    <input type="text" name="url-asignatura" id="url-asignatura" class="form-control">
-                    <input type="button" value="Añadir Asignatura" class="btn btn-primary" style="margin-top: 10px;" onclick="agregarAsignatura()">
-                    <input type="button" value="Enviar Solicitud" class="btn btn-primary" style="margin-top: 10px;" onclick="enviarSolicitud()">
-                </div>
-            </div>
-        </form>
-        </div>
-
-        <div class="row">
-            <div class="col-md-12">
-                <center><h2>Datos y Asignatura EPS</h2></center>
+            <div>
+                <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                    <defs>
+                        <path id="gentle-wave"
+                            d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                    </defs>
+                    <g class="parallax">
+                        <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                        <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                        <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                        <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+                    </g>
+                </svg>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div id="scrolltable">
-                    <table class="table" id="datos-table">
-                        <thead>
-                            <tr>
-                                <th>Titulación</th>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th>ECTS</th>
-                                <th>Destino</th>
-                                <th>Duración</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+        <div class="content flex">
+            <div class="container">
+                <h1>Solicitud</h1>
+                <form id="formulario-EPS" action="" method="post" style="display: flex; justify-content: left;">
+                    <div style="display: flex; flex-direction: column; margin-right: 20px;">
+                        <div class="form-group">
+                            <h2>Asignatura a Convalidar</h2>
+                            <label for="titulacion">Titulación</label>
+                            <select name="titulacion" id="titulacion" class="form-control">
+                            <option>Grado Ingeniería Eléctrica</option>
+                            <option>Grado Ingeniería Electrónica Industrial</option>
+                            <option>Grado Ingeniería Mecánica</option>
+                            <option>Grado Ingeniería Informática</option>
+                            <option>Doble Grado Ingeniería Energía y Rec. Minerales e Ing. Eléctrica</option>
+                            </select>
+                            <label for="codigo">Código</label>
+                            <input type="text" name="codigo" id="codigo" class="form-control">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" name="nombre" id="nombre" class="form-control">
+                            <label for="ects">ECTS</label>
+                            <input type="text" name="ects" id="ects" class="form-control">
+                        </div>
+                    </div>
+                    <div id="formulario-EPS" action="" method="post" style="display: flex; flex-direction: column; margin-left: 60px;">
+                        <div class="form-group">
+                            <h2>Datos del viaje</h2>
+                            <label for="destino">Destino</label>
+                            <select name="destino" id="destino" class="form-control">
+                                <option>Francia</option>
+                                <option>Inglaterra</option>
+                                <option>Italia</option>
+                            </select>
+                            <label for="duracion">Duración</label>
+                            <select name="duracion" id="duracion" class="form-control">
+                                <option>1er cuatrimestre</option>
+                                <option>2o cuatrimestre</option>
+                                <option>Todo el año</option>
+                            </select>
+                            <input type="button" value="Siguiente" class="btn btn-primary" style="margin-top: 10px;" onclick="mostrarTabla()">
+                        </div>
+                    </div>
+                </form>
+                <div class="container">
+                <form action="" method="post" id="formulario-destino" style="display: none;">
+                    <div style="display: flex; flex-direction: column; margin-right: 20px;">
+                        <div class="form-group">
+                            <h2>Asignatura Destino</h2>
+                            <label for="nombre-asignatura">Nombre</label>
+                            <input type="text" name="nombre-asignatura" id="nombre-asignatura" class="form-control">
+                            <label for="codigo-asignatura">Código</label>
+                            <input type="text" name="codigo-asignatura" id="codigo-asignatura" class="form-control">
+                            <label for="ects-asignatura">ECTS</label>
+                            <input type="text" name="ects-asignatura" id="ects-asignatura" class="form-control">
+                            <label for="url-asignatura">URL</label>
+                            <input type="text" name="url-asignatura" id="url-asignatura" class="form-control">
+                            <input type="button" value="Añadir Asignatura" class="btn btn-primary" style="margin-top: 10px;" onclick="agregarAsignatura()">
+                            <input type="button" value="Enviar Solicitud" class="btn btn-primary" style="margin-top: 10px;" onclick="enviarSolicitud()">
+                        </div>
+                    </div>
+                </form>
+                </div>
+        
+                <div class="row">
+                    <div class="col-md-12">
+                        <center><h2>Datos y Asignatura EPS</h2></center>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="scrolltable">
+                            <table class="table" id="datos-table">
+                                <thead>
+                                    <tr>
+                                        <th>Titulación</th>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>ECTS</th>
+                                        <th>Destino</th>
+                                        <th>Duración</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row">
+                    <div class="col-md-12">
+                        <center><h2>Asignaturas Destino</h2></center>
+                    </div>
+                </div>
+                <div class="row" id="tabla-asignaturas">
+                    <div class="col-md-12">
+                        <div id="scrolltable">
+                            <table id="asignaturas-table" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Código</th>
+                                        <th>ECTS</th>
+                                        <th>URL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for asignatura in asignaturas %}
+                                    <tr>
+                                        <td>{{ asignatura.nombre }}</td>
+                                        <td>{{ asignatura.codigo }}</td>
+                                        <td>{{ asignatura.ects }}</td>
+                                        <td>{{ asignatura.url }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-12">
-                <center><h2>Asignaturas Destino</h2></center>
-            </div>
-        </div>
-        <div class="row" id="tabla-asignaturas">
-            <div class="col-md-12">
-                <div id="scrolltable">
-                    <table id="asignaturas-table" class="table">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Código</th>
-                                <th>ECTS</th>
-                                <th>URL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for asignatura in asignaturas %}
-                            <tr>
-                                <td>{{ asignatura.nombre }}</td>
-                                <td>{{ asignatura.codigo }}</td>
-                                <td>{{ asignatura.ects }}</td>
-                                <td>{{ asignatura.url }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
+        </div>   
+    </body>
 </html>
