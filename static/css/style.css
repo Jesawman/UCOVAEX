@@ -148,7 +148,6 @@
         background-color: #008f8f;
       }
       body {
-        font-family: 'IBM Plex Sans';
         background-color: #ffffff;
       }
       h1 {
@@ -560,7 +559,7 @@
     margin-bottom: 30px;
   }
   h1 {
-    margin-top: 120px;
+    margin-top: 1px;
   }
 }
 

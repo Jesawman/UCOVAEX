@@ -130,7 +130,7 @@
         </script>
         <style>
             .inner-header {
-                height: 20vh;
+                height: -1;
                 width: 100%;
                 margin: 0;
                 padding: 5%;
@@ -139,9 +139,6 @@
                 align-items: left;
                 text-align: left;
             }
-            .content {
-                height: 80vh;
-            }
         </style>
     </head>
     <body>
@@ -149,7 +146,6 @@
             <div class="inner-header">
                 <h1>UCOVAEX</h1>
             </div>
-
             <div>
                 <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                     viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
@@ -166,10 +162,10 @@
                 </svg>
             </div>
         </div>
-        <div class="content flex">
+        <center><div class="content flex">
             <div class="container">
                 <h1>Solicitud</h1>
-                <form id="formulario-EPS" action="" method="post" style="display: flex; justify-content: left;">
+                <form id="formulario-EPS" action="" method="post" style="display: flex; justify-content: center;">
                     <div style="display: flex; flex-direction: column; margin-right: 20px;">
                         <div class="form-group">
                             <h2>Asignatura a Convalidar</h2>
@@ -204,7 +200,7 @@
                                 <option>2o cuatrimestre</option>
                                 <option>Todo el año</option>
                             </select>
-                            <input type="button" value="Siguiente" class="btn btn-primary" style="margin-top: 10px;" onclick="mostrarTabla()">
+                            <input type="button" value="Siguiente" class="btn btn-primary" style="margin-top: 10px; background-color:rgb(9, 136, 220)" onclick="mostrarTabla()">
                         </div>
                     </div>
                 </form>
@@ -227,7 +223,6 @@
                     </div>
                 </form>
                 </div>
-        
                 <div class="row">
                     <div class="col-md-12">
                         <center><h2>Datos y Asignatura EPS</h2></center>
@@ -285,7 +280,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>   
+            </div></center>
+        </div>
     </body>
 </html>
