@@ -139,14 +139,13 @@
                 align-items: left;
                 text-align: left;
             }
-
         </style>
     </head>
     <body>
         <div class="header">
             <div class="inner-header">
                 <h1>UCOVAEX</h1>
-                <form action="{{ url_for('logout') }}" method="post">
+                <form action="{{ url_for('logout') }}" method="post"">
                     <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
                 </form>
             </div>
@@ -189,7 +188,7 @@
                             <input type="text" name="ects" id="ects" class="form-control">
                         </div>
                     </div>
-                    <div id="formulario-EPS" action="" method="post" style="display: flex; flex-direction: column; margin-left: 60px;">
+                    <div id="formulario-EPS" action="" method="post" style="display: flex; flex-direction: column;">
                         <div class="form-group">
                             <h2>Datos del viaje</h2>
                             <label for="destino">Destino</label>
@@ -209,7 +208,7 @@
                     </div>
                 </form>
                 <div class="container">
-                <form action="" method="post" id="formulario-destino" style="display: none;">
+                <form action="" method="post" id="formulario-destino" style="display: none; justify-content: center;">
                     <div style="display: flex; flex-direction: column; margin-right: 20px;">
                         <div class="form-group">
                             <h2>Asignatura Destino</h2>
@@ -221,8 +220,8 @@
                             <input type="text" name="ects-asignatura" id="ects-asignatura" class="form-control">
                             <label for="url-asignatura">URL</label>
                             <input type="text" name="url-asignatura" id="url-asignatura" class="form-control">
-                            <input type="button" value="Añadir Asignatura" class="btn btn-primary" style="margin-top: 10px;" onclick="agregarAsignatura()">
-                            <input type="button" value="Enviar Solicitud" class="btn btn-primary" style="margin-top: 10px;" onclick="enviarSolicitud()">
+                            <input type="button" value="Añadir Asignatura" class="btn btn-primary" style="margin-top: 10px; background-color:rgb(9, 136, 220)" onclick="agregarAsignatura()">
+                            <input type="button" value="Enviar Solicitud" class="btn btn-primary" style="margin-top: 10px; background-color:rgb(9, 136, 220)" onclick="enviarSolicitud()">
                         </div>
                     </div>
                 </form>
