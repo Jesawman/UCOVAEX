@@ -132,19 +132,23 @@
             .inner-header {
                 height: -1;
                 width: 100%;
-                margin: 0;
+                margin: -3%;
                 padding: 5%;
                 display: flex;
                 justify-content: left;
                 align-items: left;
                 text-align: left;
             }
+
         </style>
     </head>
     <body>
         <div class="header">
             <div class="inner-header">
                 <h1>UCOVAEX</h1>
+                <form action="{{ url_for('logout') }}" method="post">
+                    <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+                </form>
             </div>
             <div>
                 <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -164,7 +168,7 @@
         </div>
         <center><div class="content flex">
             <div class="container">
-                <h1>Solicitud</h1>
+                <h2>Solicitud</h2>
                 <form id="formulario-EPS" action="" method="post" style="display: flex; justify-content: center;">
                     <div style="display: flex; flex-direction: column; margin-right: 20px;">
                         <div class="form-group">
