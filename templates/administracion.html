@@ -13,23 +13,91 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
         integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        .inner-header {
+                height: -1;
+                width: 100%;
+                margin: -3%;
+                padding: 5%;
+                text-align: left;
+                display: flex;
+                justify-content: space-between;
+                align-items: center
+        }
+        .button {
+            background-color: rgba(0, 172, 193, 1);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 0 10px 0 0;
+            border-radius: 20px; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .button:hover {
+            background-color: rgba(84, 58, 183, 1);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .inner-header {
+            display: flex; /* Usa flexbox para alinear los elementos horizontalmente */
+            justify-content: space-between; /* Alinea los elementos a ambos lados */
+            align-items: center; /* Centra los elementos verticalmente */
+        }
+
+        .inner-header h1 {
+            margin: 0;
+        }
+        
+    </style>
 </head>
+
 <body>
-    <header>
-        <a href="/">
-            <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
-        </a>
-        <h1 style="margin: 0;">UCOVAEX</h1>
-        <div style="flex-grow: 1;"></div>
-        <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px;">Agregar Asignaturas</a>
-        <form action="{{ url_for('logout') }}" method="post">
-            <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
-        </form>
-    </header>
+    <div class="header">
+            <div class="inner-header">
+                <h1>UCOVAEX</h1>
+                <form action="{{ url_for('logout') }}" method="post">
+                <a href="{{ url_for('agregar_asignatura') }}" class="button">Agregar Asignaturas</a>
+                <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+                </form>
+            </div>
+            <div>
+                <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                    <defs>
+                        <path id="gentle-wave"
+                            d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                    </defs>
+                    <g class="parallax">
+                        <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                        <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                        <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                        <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+                    </g>
+                </svg>
+            </div>
+        </div>
     <div class="container">
         <div class="row">
+        </div>
+        <div class="row">
             <div class="col-md-12">
-                <h1>Valoración de Solicitudes</h1>
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="datatable-search-input">Buscar</label>
+                    <input type="text" class="form-control" id="datatable-search-input" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="datatable">
+                </div>
             </div>
         </div>
         <div class="row">
@@ -43,17 +111,15 @@
                     data-toolbar="#toolbar">
                     <thead>
                         <tr>
-                            <th data-field="state" data-checkbox="true"></th>
                             <th data-field="usuario" data-filter-control="input" data-sortable="true">Nombre</th>
-                            <th data-field="nombre_destino" data-filter-control="select" data-sortable="true">Destino</th>
-                            <th data-field="fecha" data-filter-control="select" data-sortable="true">Fecha</th>
-                            <th data-field="estado" data-sortable="true">Estado</th>
+                            <th data-field="nombre_destino" data-filter-control="input" data-sortable="true">Destino</th>
+                            <th data-field="fecha" data-filter-control="input" data-sortable="true">Fecha</th>
+                            <th data-field="estado" data-filter-control="input" data-sortable="true">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for solicitud in solicitudes %}
                         <tr>
-                            <td class="bs-checkbox "><input data-index="{{ loop.index0 }}" name="btSelectItem" type="checkbox"></td>
                             <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
                             <td>{{ solicitud['nombre_destino'] }}</td>
                             <td>{{ solicitud['fecha'] }}</td>
@@ -65,26 +131,48 @@
             </div>
         </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-        integrity="sha384-XXX"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-pzjw8f+ua6vWPhhYclhWAr+HKe4fX+zEhq6IHONtNvID7TdCfz6q4W+djOARsPBd"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.10.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
     <script>
-        $(document).ready(function () {
-            var $table = $('#table');
+        // Get the input field and table
+        const input = document.getElementById("datatable-search-input");
+        const table = document.getElementById("table");
 
-            $('#toolbar').find('select').change(function () {
-                $table.bootstrapTable('refreshOptions', {
-                    exportDataType: $(this).val()
-                });
-            });
-        });
+        // Add an event listener to the input field
+        input.addEventListener("input", filterTable);
+
+        // Function to filter the table based on the input value
+        function filterTable() {
+            // Get the input value
+            const filterValue = input.value.toLowerCase();
+
+            // Get all the rows in the table body
+            const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+            // Loop through each row and hide/show based on the filter value
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const columns = row.getElementsByTagName("td");
+                let foundMatch = false;
+
+                // Loop through each column in the row
+                for (let j = 0; j < columns.length; j++) {
+                    const column = columns[j];
+                    const cellValue = column.innerText.toLowerCase();
+
+                    // Check if the cell value contains the filter value
+                    if (cellValue.includes(filterValue)) {
+                        foundMatch = true;
+                        break;
+                    }
+                }
+
+                // Hide/show the row based on the filter value
+                if (foundMatch) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            }
+        }
     </script>
 </body>
 
