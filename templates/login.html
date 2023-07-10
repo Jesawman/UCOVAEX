@@ -1,46 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Inicia sesión</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" >
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+        crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-    <body>
-        <header>
-            <a href="/">
-                <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
-            </a>
-                <h1 style="margin: 0;">UCOVAEX</h1>
-                <div style="flex-grow: 1;"></div>
-                <a href="{{ url_for('login') }}" class="button" style="font-size: 14px;">Iniciar sesión</a>
-                <a href="{{ url_for('register') }}" class="button" style="font-size: 14px;">Registrarse</a>
-            </header>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <h1>Proyecto Final</h1>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <form action="" method="post">
-                        <div class="form-group">
-                            <label for="username">Nombre de usuario</label>
-                            <input type="text" name="username" id="username" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Contraseña</label>
-                            <input type="password" name="password" id="password" class="form-control">
-                        </div>
-                        <input type="submit" value="Iniciar sesión" class="btn btn-primary">
-                    </form>
-                </div>
-            </div>
+
+<body>
+    <div class="header">
+        <div class="inner-header">
+            <h1>UCOVAEX</h1>
         </div>
-    </body>
-    </html>
+
+        <div>
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                <defs>
+                    <path id="gentle-wave"
+                        d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <div class="content flex">
+        <div class="login-box">
+            <h2>Iniciar Sesión</h2>
+            <form action="{{ url_for('login') }}" method="post">
+                <div class="user-box">
+                    <input type="text" name="username" required="">
+                    <label>Nombre de usuario</label>
+                </div>
+                <div class="user-box">
+                    <input type="password" name="password" required="">
+                    <label>Contraseña</label>
+                </div>
+                <center><button type="submit" class="custom-btn btn-1">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    Login
+                </button></center>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>
