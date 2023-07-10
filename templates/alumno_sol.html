@@ -1,134 +1,179 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ alumno }} - {{ destino }}</title>
+    <title>Administrar Solicitudes</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        .inner-header {
+                height: -1;
+                width: 100%;
+                margin: -3%;
+                padding: 5%;
+                text-align: left;
+                display: flex;
+                justify-content: space-between;
+                align-items: center
+        }
+        .button {
+            background-color: rgba(0, 172, 193, 1);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 0 10px 0 0;
+            border-radius: 20px; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .button:hover {
+            background-color: rgba(84, 58, 183, 1);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .inner-header {
+            display: flex; /* Usa flexbox para alinear los elementos horizontalmente */
+            justify-content: space-between; /* Alinea los elementos a ambos lados */
+            align-items: center; /* Centra los elementos verticalmente */
+        }
+
+        .inner-header h1 {
+            margin: 0;
+        }
+        
+    </style>
 </head>
+
 <body>
-    <header>
-        <a href="/">
-            <img src="/static/images/logo.png" alt="Logo de UCOVAEX">
-        </a>
-        <h1 style="margin: 0;">UCOVAEX</h1>
-        <div style="flex-grow: 1;"></div>
-        <a href="{{ url_for('agregar_asignatura') }}" class="button" style="font-size: 14px;">Agregar Asignaturas</a>
-        <form action="{{ url_for('logout') }}" method="post">
-            <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
-        </form>
-        <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
-    </header>
+    <div class="header">
+            <div class="inner-header">
+                <h1>UCOVAEX</h1>
+                <form action="{{ url_for('logout') }}" method="post">
+                <a href="{{ url_for('agregar_asignatura') }}" class="button">Agregar Asignaturas</a>
+                <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+                </form>
+            </div>
+            <div>
+                <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                    <defs>
+                        <path id="gentle-wave"
+                            d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                    </defs>
+                    <g class="parallax">
+                        <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                        <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                        <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                        <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+                    </g>
+                </svg>
+            </div>
+        </div>
     <div class="container">
         <div class="row">
+        </div>
+        <div class="row">
             <div class="col-md-12">
-                <h1>Valoración de Solicitudes</h1>
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="datatable-search-input">Buscar</label>
+                    <input type="text" class="form-control" id="datatable-search-input" />
+                </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
-                <h2>Solicitudes del alumno: {{ alumno }} - {{ destino }}</h2>
-            </div>
-        </div>
-        {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
-            <div class="row">
-                <div class="col-md-12">
-                    <h3>{{ asignatura_uco }}</h3>
+                <div id="datatable">
                 </div>
             </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Asignatura UCO</th>
-                        <th>Código</th>
-                        <th>ECTS</th>
-                        <th>Asignaturas del Destino</th>
-                        <th>Código</th>
-                        <th>ECTS</th>
-                        <th>URL</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for solicitud in solicitudes_destino %}
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table id="table" class="table"
+                    data-toggle="table"
+                    data-search="true"
+                    data-filter-control="true"
+                    data-show-export="true"
+                    data-click-to-select="true"
+                    data-toolbar="#toolbar">
+                    <thead>
                         <tr>
-                            {% if loop.index == 1 %}
-                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ asignatura_uco }}</td>
-                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['codigo_uco'] }}</td>
-                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['ects_uco'] }}</td>
-                            {% endif %}
-                            <td class="align-middle">{{ solicitud['nombre_destino'] }}</td>
-                            <td class="align-middle">{{ solicitud['codigo_destino'] }}</td>
-                            <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
-                            <td class="align-middle">{{ solicitud['url'] }}</td>
-                            <td class="align-middle">{{ solicitud['estado'] }}</td>
-                            {% if loop.index == 1 %}
-                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                    <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
-                                    <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
-                                    <button type="button" class="btn btn-primary" onclick="enviarComision('{{ solicitud['codigo_uco'] }}')">Enviar</button>
-                                </td>
-                            {% endif %}
+                            <th data-field="usuario" data-filter-control="input" data-sortable="true">Nombre</th>
+                            <th data-field="nombre_destino" data-filter-control="input" data-sortable="true">Destino</th>
+                            <th data-field="fecha" data-filter-control="input" data-sortable="true">Fecha</th>
+                            <th data-field="estado" data-filter-control="input" data-sortable="true">Estado</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endfor %}
+                    </thead>
+                    <tbody>
+                        {% for solicitud in solicitudes %}
+                        <tr>
+                            <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
+                            <td>{{ solicitud['nombre_destino'] }}</td>
+                            <td>{{ solicitud['fecha'] }}</td>
+                            <td>{{ solicitud['estado'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+    <script>
+        // Get the input field and table
+        const input = document.getElementById("datatable-search-input");
+        const table = document.getElementById("table");
+
+        // Add an event listener to the input field
+        input.addEventListener("input", filterTable);
+
+        // Function to filter the table based on the input value
+        function filterTable() {
+            // Get the input value
+            const filterValue = input.value.toLowerCase();
+
+            // Get all the rows in the table body
+            const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+            // Loop through each row and hide/show based on the filter value
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const columns = row.getElementsByTagName("td");
+                let foundMatch = false;
+
+                // Loop through each column in the row
+                for (let j = 0; j < columns.length; j++) {
+                    const column = columns[j];
+                    const cellValue = column.innerText.toLowerCase();
+
+                    // Check if the cell value contains the filter value
+                    if (cellValue.includes(filterValue)) {
+                        foundMatch = true;
+                        break;
+                    }
+                }
+
+                // Hide/show the row based on the filter value
+                if (foundMatch) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            }
+        }
+    </script>
 </body>
+
 </html>
-
-<script>
-    function aprobarSolicitud(codigo_uco) {
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/aprobar';
-
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'codigo_uco';
-        input.value = codigo_uco;
-
-        form.appendChild(input);
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    function denegarSolicitud(codigo_uco) {
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/denegar';
-
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'codigo_uco';
-        input.value = codigo_uco;
-
-        form.appendChild(input);
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    function enviarComision(codigo_uco) {
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/enviar';
-
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'codigo_uco';
-        input.value = codigo_uco;
-
-        form.appendChild(input);
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-</script>
