@@ -79,7 +79,7 @@ def login():
                     if login_user_dict[1] == 'alumno':
                         return redirect(url_for('solicitud'))
                     elif login_user_dict[1] == 'comision':
-                        return redirect(url_for('comentarios'))
+                        return redirect(url_for('administracion'))
                     elif login_user_dict[1] == 'administrador':
                         return redirect(url_for('administracion'))
                 else:
@@ -342,6 +342,16 @@ def mostrar_solicitudes_usuario(nombre_usuario):
     """, (nombre_usuario,))
     solicitudes = cursor.fetchall()
 
+    cursor.execute("""
+        SELECT tipo
+        FROM usuarios
+        WHERE nombre_usuario = ?
+    """, (current_user.get_id(),))
+    tipo_usuario_row  = cursor.fetchone()
+    tipo_usuario = tipo_usuario_row[0]
+    print("tipo_usuario:")
+    print(tipo_usuario)
+
     connection.close()
 
     grupos_solicitudes = {}
@@ -378,7 +388,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 'estado': estado
             }]
 
-    return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes)
+    return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario)
 
 @app.route('/aprobar', methods=['POST'])
 def aprobar_solicitud():

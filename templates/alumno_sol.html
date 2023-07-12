@@ -111,7 +111,9 @@
                         <th>ECTS</th>
                         <th>URL</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
+                        {% if usuario_tipo != 'comision' %}
+                            <th>Acciones</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -127,7 +129,7 @@
                             <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
                             <td class="align-middle">{{ solicitud['url'] }}</td>
                             <td class="align-middle">{{ solicitud['estado'] }}</td>
-                            {% if loop.index == 1 %}
+                            {% if loop.index == 1 and usuario_tipo != 'comision' %}
                                 <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                     <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
                                     <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
@@ -138,6 +140,13 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% if usuario_tipo == 'comision' %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <textarea class="form-control" rows="3" placeholder="Comentario"></textarea>
+                    </div>
+                </div>
+            {% endif %}
         {% endfor %}
     </div>
 </body>
