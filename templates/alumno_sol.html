@@ -43,12 +43,13 @@
             background-color: rgba(84, 58, 183, 1);
             color: #fff;
             text-decoration: none;
+            border: none;
         }
 
         .inner-header {
-            display: flex; /* Usa flexbox para alinear los elementos horizontalmente */
-            justify-content: space-between; /* Alinea los elementos a ambos lados */
-            align-items: center; /* Centra los elementos verticalmente */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
         }
 
         .inner-header h1 {
@@ -142,19 +143,26 @@
                             <center><button style="margin: 1vh; margin-bottom: 5vh;" type="button" class="button" onclick="guardarComentario('{{ alumno }}', '{{ asignatura_uco }}')">Guardar Comentario</button></center>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h4>Comentarios:</h4>
-                            <ul id="comentarios-{{ alumno }}-{{ asignatura_uco }}">
-                                {% for comentario in comentarios %}
-                                    {% if comentario[0] == alumno and comentario[1] == asignatura_uco %}
-                                        <li>{{ comentario[2] }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
                 {% endif %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4>
+                            <button type="button" class="button" onclick="toggleComentarios('{{ alumno }}', '{{ asignatura_uco }}')">
+                                <span id="comentarios-toggle-{{ alumno }}-{{ asignatura_uco }}">Comentarios ▼</span>
+                            </button>
+                        </h4>
+                        <ul id="comentarios-{{ alumno }}-{{ asignatura_uco }}" class="comentarios-lista" style="display: none;">
+                            {% for comentario in comentarios %}
+                                {% if comentario[0] == alumno and comentario[1] == asignatura_uco %}
+                                    <li class="comentario-item">
+                                        {{ comentario[2] }}
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                        <hr size="1px" color="#00acc1" />
+                    </div>
+                </div>
             {% endfor %}
         </div>
 </body>
@@ -213,17 +221,44 @@
         var comentario = document.getElementById("comentario-" + alumno + "-" + asignatura).value;
 
         var comentarioItem = document.createElement("li");
-        comentarioItem.textContent = comentario;
+        comentarioItem.classList.add("comentario-item");
+
+        var comentarioContent = document.createElement("div");
+        comentarioContent.classList.add("comentario-content");
+        comentarioContent.textContent = comentario;
+
+
+        comentarioItem.appendChild(comentarioContent);
 
         var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
 
-        comentariosList.appendChild(comentarioItem);
+        comentariosList.insertBefore(comentarioItem, comentariosList.firstChild);
 
         document.getElementById("comentario-" + alumno + "-" + asignatura).value = "";
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/guardar_comentario", true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        xhr.send("alumno=" + encodeURIComponent(alumno) + "&asignatura=" + encodeURIComponent(asignatura) + "&comentario=" + encodeURIComponent(comentario));
+        mostrarComentarios(alumno, asignatura);
+    }
+
+    function toggleComentarios(alumno, asignatura) {
+        var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
+        var comentariosToggle = document.getElementById("comentarios-toggle-" + alumno + "-" + asignatura);
+
+        if (comentariosList.style.display === "none") {
+            comentariosList.style.display = "block";
+            comentariosToggle.textContent = "Comentarios ▲";
+        } else {
+            comentariosList.style.display = "none";
+            comentariosToggle.textContent = "Comentarios ▼";
+        }
+    }
+
+    function mostrarComentarios(alumno, asignatura) {
+        var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
+        var comentariosToggle = document.getElementById("comentarios-toggle-" + alumno + "-" + asignatura);
+
+        if (comentariosList.style.display === "none") {
+            comentariosList.style.display = "block";
+            comentariosToggle.textContent = "Comentarios ▲";
+        }
     }
 </script>

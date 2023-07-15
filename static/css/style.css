@@ -493,6 +493,36 @@
             }
         }
 
+        .comentarios-lista {
+            list-style: none;
+            padding: 0;
+        }
+    
+        .comentario-item {
+            background-color: #f5f5f5;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+    
+        .comentario-content {
+            display: inline-block;
+            width: 90%;
+            overflow-wrap: break-word;
+        }
+    
+        .eliminar-comentario {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+    
+        .comentarios-section {
+            height: 200px;
+            overflow-y: auto;
+        }
+
      /* Mobile */
 @media screen and (max-width: 576px) {
   header {
