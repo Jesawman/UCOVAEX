@@ -320,6 +320,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
     cursor = connection.cursor()
     cursor.execute("SELECT usuario FROM relacion_asignaturas_alumnos WHERE usuario = ?", (nombre_usuario,))
     alumno = cursor.fetchone()[0]
+    comentarios = obtener_comentarios()
 
     cursor.execute("""
         SELECT destino
@@ -388,7 +389,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 'estado': estado
             }]
 
-    return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario)
+    return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios)
 
 @app.route('/aprobar', methods=['POST'])
 def aprobar_solicitud():
@@ -436,6 +437,30 @@ def enviar_comision():
 
     flash('Solicitud enviada', 'info')
     return redirect(request.referrer)
+
+@app.route("/guardar_comentario", methods=["POST"])
+def guardar_comentario():
+    alumno = request.form.get("alumno")
+    asignatura = request.form.get("asignatura")
+    comentario = request.form.get("comentario")
+
+    connection = get_db()
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO comentarios (alumno, asignatura, comentario) VALUES (?, ?, ?)",
+                   (alumno, asignatura, comentario))
+    connection.commit()
+    connection.close()
+
+    return "Comentario guardado correctamente"
+
+def obtener_comentarios():
+    connection = get_db()
+    cursor = connection.cursor()
+    cursor.execute("SELECT alumno, asignatura, comentario FROM comentarios")
+    comentarios = cursor.fetchall()
+    connection.close()
+
+    return comentarios
 
 @app.route('/agregar_asignatura', methods=['GET', 'POST'])
 @login_required
