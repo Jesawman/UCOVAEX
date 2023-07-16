@@ -16,8 +16,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 class User:
-    def __init__(self, username):
+    def __init__(self, username, tipo):
         self.username = username
+        self.tipo = tipo
 
     def is_authenticated(self):
         return True
@@ -30,10 +31,27 @@ class User:
 
     def get_id(self):
         return self.username
-
+    
 @login_manager.user_loader
 def load_user(username):
-    return User(username)
+    tipo = obtener_tipo_de_usuario(username)
+    return User(username, tipo)
+
+def obtener_tipo_de_usuario(username):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    query = "SELECT tipo FROM usuarios WHERE nombre_usuario = ?"
+    cursor.execute(query, (username,))
+    result = cursor.fetchone()
+
+    conn.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return "alumno"
+
 
 @app.route('/')
 def index():
@@ -64,6 +82,7 @@ def add_header(response):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    tipo = "alumno"
     if request.method == 'POST':
         with get_db() as conn:
             global logged_in
@@ -73,7 +92,7 @@ def login():
 
             if login_user_dict:
                 if check_password_hash(login_user_dict[3], request.form['password']):
-                    user_obj = User(login_user_dict[2])
+                    user_obj = User(login_user_dict[2], tipo)
                     login_user(user_obj)
                     logged_in = True
                     if login_user_dict[1] == 'alumno':
@@ -111,7 +130,7 @@ def register():
             conn.commit()
             flash('Usuario registrado')
             conn.close()
-            return redirect(url_for('login'))
+            return redirect(url_for('administracion'))
         
         conn.close()
         flash('El nombre de usuario ya existe')
@@ -123,33 +142,39 @@ asignaturas = []
 
 @app.route('/solicitud', methods=['GET', 'POST'])
 def solicitud():
-    if request.method == 'POST':
-        if 'nombre' in request.form:
-            titulacion = request.form.get('titulacion')
-            codigo = request.form.get('codigo')
-            nombre = request.form.get('nombre')
-            ects = request.form.get('ects')
-            destino = request.form.get('destino')
-            duracion = request.form.get('duracion')
+    if current_user.tipo == 'alumno':
 
-            return render_template('solicitud.html', titulacion=titulacion, codigo=codigo, nombre=nombre, ects=ects,
-                                    destino=destino, duracion=duracion, mostrar_tabla=True, asignaturas=asignaturas)
-        elif 'nombre-asignatura' in request.form:
-            nombre_asignatura = request.form.get('nombre-asignatura')
-            codigo_asignatura = request.form.get('codigo-asignatura')
-            ects_asignatura = request.form.get('ects-asignatura')
-            url_asignatura = request.form.get('url-asignatura')
+        if request.method == 'POST':
+            if 'nombre' in request.form:
+                titulacion = request.form.get('titulacion')
+                codigo = request.form.get('codigo')
+                nombre = request.form.get('nombre')
+                ects = request.form.get('ects')
+                destino = request.form.get('destino')
+                duracion = request.form.get('duracion')
 
-            asignaturas.append({
-                'nombre': nombre_asignatura,
-                'codigo': codigo_asignatura,
-                'ects': ects_asignatura,
-                'url': url_asignatura
-            })
+                return render_template('solicitud.html', titulacion=titulacion, codigo=codigo, nombre=nombre, ects=ects,
+                                        destino=destino, duracion=duracion, mostrar_tabla=True, asignaturas=asignaturas)
+            elif 'nombre-asignatura' in request.form:
+                nombre_asignatura = request.form.get('nombre-asignatura')
+                codigo_asignatura = request.form.get('codigo-asignatura')
+                ects_asignatura = request.form.get('ects-asignatura')
+                url_asignatura = request.form.get('url-asignatura')
 
-            return render_template('solicitud.html', mostrar_formulario_asignatura=True, asignaturas=asignaturas)
+                asignaturas.append({
+                    'nombre': nombre_asignatura,
+                    'codigo': codigo_asignatura,
+                    'ects': ects_asignatura,
+                    'url': url_asignatura
+                })
 
-    return render_template('solicitud.html')
+                return render_template('solicitud.html', mostrar_formulario_asignatura=True, asignaturas=asignaturas)
+
+        return render_template('solicitud.html')
+    else:
+        logout_user()
+        flash('Acceso denegado. Por favor, inicia sesión como alumno.')
+        return redirect(url_for('login'))
 
 @app.route('/solicitud/<int:id>/eliminar', methods=['GET'])
 @login_required
@@ -254,26 +279,31 @@ def comentarios():
 @app.route('/administracion', methods=['GET', 'POST'])
 @login_required
 def administracion():
-    if request.method == 'POST':
+    if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision':
+        if request.method == 'POST':
+            with get_db() as conn:
+                c = conn.cursor()
+                c.execute('UPDATE solicitudes SET estado = ? WHERE id = ?',
+                            (request.form['estado'], request.form['_id']))
+                conn.commit()
+                flash('Solicitud actualizada')
+                return redirect(url_for('administracion'))
         with get_db() as conn:
             c = conn.cursor()
-            c.execute('UPDATE solicitudes SET estado = ? WHERE id = ?',
-                        (request.form['estado'], request.form['_id']))
-            conn.commit()
-            flash('Solicitud actualizada')
-            return redirect(url_for('administracion'))
-    with get_db() as conn:
-        c = conn.cursor()
 
-        c.execute('''
-            SELECT usuario, nombre_destino,MAX(fecha) AS fecha, estado
-            FROM relacion_asignaturas_alumnos
-            GROUP BY usuario
-            ORDER BY usuario ASC
-        ''')
-        solicitudes = c.fetchall()
-        
-        return render_template('administracion.html', solicitudes=solicitudes)
+            c.execute('''
+                SELECT usuario, nombre_destino,MAX(fecha) AS fecha, estado
+                FROM relacion_asignaturas_alumnos
+                GROUP BY usuario
+                ORDER BY usuario ASC
+            ''')
+            solicitudes = c.fetchall()
+            
+            return render_template('administracion.html', solicitudes=solicitudes)
+    else:
+        logout_user()
+        flash('Acceso denegado. Por favor, inicia sesión como alumno.')
+        return redirect(url_for('login'))
     
 def obtener_url_asignatura(codigo_asignatura):
     connection = get_db()
@@ -314,83 +344,90 @@ def obtener_ects_asignatura(codigo_asignatura):
     connection.close()
     return ects
 
+
 @app.route('/usuario/<nombre_usuario>')
 def mostrar_solicitudes_usuario(nombre_usuario):
-    connection = get_db()
-    cursor = connection.cursor()
-    cursor.execute("SELECT usuario FROM relacion_asignaturas_alumnos WHERE usuario = ?", (nombre_usuario,))
-    alumno = cursor.fetchone()[0]
-    comentarios = obtener_comentarios()
+    if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision':
 
-    cursor.execute("""
-        SELECT destino
-        FROM asignatura_eps
-        WHERE codigo IN (
-            SELECT codigo_destino
+        connection = get_db()
+        cursor = connection.cursor()
+        cursor.execute("SELECT usuario FROM relacion_asignaturas_alumnos WHERE usuario = ?", (nombre_usuario,))
+        alumno = cursor.fetchone()[0]
+        comentarios = obtener_comentarios()
+
+        cursor.execute("""
+            SELECT destino
+            FROM asignatura_eps
+            WHERE codigo IN (
+                SELECT codigo_destino
+                FROM relacion_asignaturas_alumnos
+                WHERE usuario = ?
+            )
+            LIMIT 1
+        """, (nombre_usuario,))
+        destino_result = cursor.fetchone()
+        destino = destino_result[0] if destino_result else None
+
+        cursor.execute("""
+            SELECT nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-        )
-        LIMIT 1
-    """, (nombre_usuario,))
-    destino_result = cursor.fetchone()
-    destino = destino_result[0] if destino_result else None
+            ORDER BY nombre_eps
+        """, (nombre_usuario,))
+        solicitudes = cursor.fetchall()
 
-    cursor.execute("""
-        SELECT nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado
-        FROM relacion_asignaturas_alumnos
-        WHERE usuario = ?
-        ORDER BY nombre_eps
-    """, (nombre_usuario,))
-    solicitudes = cursor.fetchall()
+        cursor.execute("""
+            SELECT tipo
+            FROM usuarios
+            WHERE nombre_usuario = ?
+        """, (current_user.get_id(),))
+        tipo_usuario_row  = cursor.fetchone()
+        tipo_usuario = tipo_usuario_row[0]
+        print("tipo_usuario:")
+        print(tipo_usuario)
 
-    cursor.execute("""
-        SELECT tipo
-        FROM usuarios
-        WHERE nombre_usuario = ?
-    """, (current_user.get_id(),))
-    tipo_usuario_row  = cursor.fetchone()
-    tipo_usuario = tipo_usuario_row[0]
-    print("tipo_usuario:")
-    print(tipo_usuario)
+        connection.close()
 
-    connection.close()
+        grupos_solicitudes = {}
+        for solicitud in solicitudes:
+            nombre_eps = solicitud[0]
+            codigo_eps = solicitud[1]
+            nombre_destino = solicitud[2]
+            codigo_destino = solicitud[3]
+            estado =  solicitud[4]
 
-    grupos_solicitudes = {}
-    for solicitud in solicitudes:
-        nombre_eps = solicitud[0]
-        codigo_eps = solicitud[1]
-        nombre_destino = solicitud[2]
-        codigo_destino = solicitud[3]
-        estado =  solicitud[4]
+            asignatura_uco = nombre_eps if nombre_eps else codigo_eps
 
-        asignatura_uco = nombre_eps if nombre_eps else codigo_eps
+            if asignatura_uco in grupos_solicitudes:
+                grupos_solicitudes[asignatura_uco].append({
+                    'nombre_uco': nombre_eps,
+                    'codigo_uco': codigo_eps,
+                    'nombre_destino': nombre_destino,
+                    'codigo_destino': codigo_destino,
+                    'ects_uco': obtener_ects_asignatura(codigo_eps),
+                    'ects_destino': obtener_ects_asignatura(codigo_destino),
+                    'url': obtener_url_asignatura(codigo_destino),
+                    'estado': estado
 
-        if asignatura_uco in grupos_solicitudes:
-            grupos_solicitudes[asignatura_uco].append({
-                'nombre_uco': nombre_eps,
-                'codigo_uco': codigo_eps,
-                'nombre_destino': nombre_destino,
-                'codigo_destino': codigo_destino,
-                'ects_uco': obtener_ects_asignatura(codigo_eps),
-                'ects_destino': obtener_ects_asignatura(codigo_destino),
-                'url': obtener_url_asignatura(codigo_destino),
-                'estado': estado
+                })
+            else:
+                grupos_solicitudes[asignatura_uco] = [{
+                    'nombre_uco': nombre_eps,
+                    'codigo_uco': codigo_eps,
+                    'nombre_destino': nombre_destino,
+                    'codigo_destino': codigo_destino,
+                    'ects_uco': obtener_ects_asignatura(codigo_eps),
+                    'ects_destino': obtener_ects_asignatura(codigo_destino),
+                    'url': obtener_url_asignatura(codigo_destino),
+                    'estado': estado
+                }]
 
-            })
-        else:
-            grupos_solicitudes[asignatura_uco] = [{
-                'nombre_uco': nombre_eps,
-                'codigo_uco': codigo_eps,
-                'nombre_destino': nombre_destino,
-                'codigo_destino': codigo_destino,
-                'ects_uco': obtener_ects_asignatura(codigo_eps),
-                'ects_destino': obtener_ects_asignatura(codigo_destino),
-                'url': obtener_url_asignatura(codigo_destino),
-                'estado': estado
-            }]
-
-    return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios)
-
+        return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios)
+    else:
+        logout_user()
+        flash('Acceso denegado. Por favor, inicia sesión como alumno.')
+        return redirect(url_for('login'))
+    
 @app.route('/aprobar', methods=['POST'])
 def aprobar_solicitud():
     codigo_uco = request.form['codigo_uco']
@@ -461,23 +498,6 @@ def obtener_comentarios():
     connection.close()
 
     return comentarios
-
-@app.route('/agregar_asignatura', methods=['GET', 'POST'])
-@login_required
-def agregar_asignatura():
-    if request.method == 'POST':
-        conn = sqlite3.connect('database.db')
-        c = conn.cursor()
-        if 'asignatura_uco' in request.form:
-            c.execute('INSERT INTO asignaturas_uco (codigo_asignatura_uco, nombre_uco, ects_uco) VALUES (?, ?, ?)',
-            (request.form['codigo_asignatura_uco'], request.form['nombre_uco'], request.form['ects_uco']))
-        elif 'asignatura_exterior' in request.form:
-            c.execute('INSERT INTO asignaturas_exterior (codigo_asignatura_extranjero, nombre_extranjero, url, ects_extranjero) VALUES (?, ?, ?, ?)',
-            (request.form['codigo_asignatura_extranjero'], request.form['nombre_extranjero'], request.form['url'], request.form['ects_extranjero']))
-            conn.commit()
-            flash('Asignatura añadida correctamente')
-            return redirect(url_for('agregar_asignatura'))
-    return render_template('agregar_asignatura.html')
 
 @app.route('/logout', methods=['POST'])
 @login_required
