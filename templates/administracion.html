@@ -35,7 +35,7 @@
             text-decoration: none;
             font-size: 16px;
             margin: 0 10px 0 0;
-            border-radius: 20px; 
+            border-radius: 20px;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -46,9 +46,9 @@
         }
 
         .inner-header {
-            display: flex; /* Usa flexbox para alinear los elementos horizontalmente */
-            justify-content: space-between; /* Alinea los elementos a ambos lados */
-            align-items: center; /* Centra los elementos verticalmente */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .inner-header h1 {
@@ -63,7 +63,7 @@
             <div class="inner-header">
                 <h1>UCOVAEX</h1>
                 <form action="{{ url_for('logout') }}" method="post">
-                <a href="{{ url_for('agregar_asignatura') }}" class="button">Agregar Asignaturas</a>
+                <a href="{{ url_for('register') }}" class="button">Agregar Usuario</a>
                 <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
                 </form>
             </div>

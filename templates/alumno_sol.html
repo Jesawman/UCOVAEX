@@ -43,12 +43,13 @@
             background-color: rgba(84, 58, 183, 1);
             color: #fff;
             text-decoration: none;
+            border: none;
         }
 
         .inner-header {
-            display: flex; /* Usa flexbox para alinear los elementos horizontalmente */
-            justify-content: space-between; /* Alinea los elementos a ambos lados */
-            align-items: center; /* Centra los elementos verticalmente */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
         }
 
         .inner-header h1 {
@@ -63,7 +64,7 @@
             <div class="inner-header">
                 <h1>UCOVAEX</h1>
                 <form action="{{ url_for('logout') }}" method="post">
-                <a href="{{ url_for('administracion.html') }}" class="button">Volver</a>
+                <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
                 <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
                 </form>
             </div>
@@ -83,63 +84,87 @@
                 </svg>
             </div>
         </div>
-     <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <h1>Valoración de Solicitudes</h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Solicitudes del alumno: {{ alumno }} - {{ destino }}</h2>
-            </div>
-        </div>
-        {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
+        <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <h3>{{ asignatura_uco }}</h3>
+                    <h1>Valoración de Solicitudes</h1>
                 </div>
             </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Asignatura UCO</th>
-                        <th>Código</th>
-                        <th>ECTS</th>
-                        <th>Asignaturas del Destino</th>
-                        <th>Código</th>
-                        <th>ECTS</th>
-                        <th>URL</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for solicitud in solicitudes_destino %}
+            <div class="row">
+                <div class="col-md-12">
+                    <h2>Solicitudes del alumno: {{ alumno }} - {{ destino }}</h2>
+                </div>
+            </div>
+            {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
+                <table class="table">
+                    <thead>
                         <tr>
-                            {% if loop.index == 1 %}
-                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ asignatura_uco }}</td>
-                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['codigo_uco'] }}</td>
-                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['ects_uco'] }}</td>
-                            {% endif %}
-                            <td class="align-middle">{{ solicitud['nombre_destino'] }}</td>
-                            <td class="align-middle">{{ solicitud['codigo_destino'] }}</td>
-                            <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
-                            <td class="align-middle">{{ solicitud['url'] }}</td>
-                            <td class="align-middle">{{ solicitud['estado'] }}</td>
-                            {% if loop.index == 1 %}
-                                <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                    <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
-                                    <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
-                                    <button type="button" class="btn btn-primary" onclick="enviarComision('{{ solicitud['codigo_uco'] }}')">Enviar</button>
-                                </td>
+                            <th>Asignatura UCO</th>
+                            <th>Código</th>
+                            <th>ECTS</th>
+                            <th>Asignaturas del Destino</th>
+                            <th>Código</th>
+                            <th>ECTS</th>
+                            <th>URL</th>
+                            <th>Estado</th>
+                            {% if usuario_tipo != 'comision' %}
+                                <th>Acciones</th>
                             {% endif %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endfor %}
-    </div>
+                    </thead>
+                    <tbody>
+                        {% for solicitud in solicitudes_destino %}
+                            <tr>
+                                {% if loop.index == 1 %}
+                                    <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ asignatura_uco }}</td>
+                                    <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['codigo_uco'] }}</td>
+                                    <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['ects_uco'] }}</td>
+                                {% endif %}
+                                <td class="align-middle">{{ solicitud['nombre_destino'] }}</td>
+                                <td class="align-middle">{{ solicitud['codigo_destino'] }}</td>
+                                <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
+                                <td class="align-middle">{{ solicitud['url'] }}</td>
+                                <td class="align-middle">{{ solicitud['estado'] }}</td>
+                                {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' %}
+                                    <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                        <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
+                                        <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
+                                        <button type="button" class="btn btn-primary" onclick="enviarComision('{{ solicitud['codigo_uco'] }}')">Enviar</button>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if usuario_tipo == 'comision' %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <textarea style="margin : 1vh" class="form-control" rows="auto" placeholder="Comentario" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" id="comentario-{{ alumno }}-{{ asignatura_uco }}"></textarea>
+                            <center><button style="margin: 1vh; margin-bottom: 5vh;" type="button" class="button" onclick="guardarComentario('{{ alumno }}', '{{ asignatura_uco }}')">Guardar Comentario</button></center>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4>
+                            <button type="button" class="button" onclick="toggleComentarios('{{ alumno }}', '{{ asignatura_uco }}')">
+                                <span id="comentarios-toggle-{{ alumno }}-{{ asignatura_uco }}">Comentarios ▼</span>
+                            </button>
+                        </h4>
+                        <ul id="comentarios-{{ alumno }}-{{ asignatura_uco }}" class="comentarios-lista" style="display: none;">
+                            {% for comentario in comentarios %}
+                                {% if comentario[0] == alumno and comentario[1] == asignatura_uco %}
+                                    <li class="comentario-item">
+                                        {{ comentario[2] }}
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                        <hr size="1px" color="#00acc1" />
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
 </body>
 </html>
 
@@ -190,5 +215,50 @@
 
         document.body.appendChild(form);
         form.submit();
+    }
+
+    function guardarComentario(alumno, asignatura) {
+        var comentario = document.getElementById("comentario-" + alumno + "-" + asignatura).value;
+
+        var comentarioItem = document.createElement("li");
+        comentarioItem.classList.add("comentario-item");
+
+        var comentarioContent = document.createElement("div");
+        comentarioContent.classList.add("comentario-content");
+        comentarioContent.textContent = comentario;
+
+
+        comentarioItem.appendChild(comentarioContent);
+
+        var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
+
+        comentariosList.insertBefore(comentarioItem, comentariosList.firstChild);
+
+        document.getElementById("comentario-" + alumno + "-" + asignatura).value = "";
+
+        mostrarComentarios(alumno, asignatura);
+    }
+
+    function toggleComentarios(alumno, asignatura) {
+        var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
+        var comentariosToggle = document.getElementById("comentarios-toggle-" + alumno + "-" + asignatura);
+
+        if (comentariosList.style.display === "none") {
+            comentariosList.style.display = "block";
+            comentariosToggle.textContent = "Comentarios ▲";
+        } else {
+            comentariosList.style.display = "none";
+            comentariosToggle.textContent = "Comentarios ▼";
+        }
+    }
+
+    function mostrarComentarios(alumno, asignatura) {
+        var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
+        var comentariosToggle = document.getElementById("comentarios-toggle-" + alumno + "-" + asignatura);
+
+        if (comentariosList.style.display === "none") {
+            comentariosList.style.display = "block";
+            comentariosToggle.textContent = "Comentarios ▲";
+        }
     }
 </script>
