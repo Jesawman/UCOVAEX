@@ -125,7 +125,7 @@
                                 <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
                                 <td class="align-middle">{{ solicitud['url'] }}</td>
                                 <td class="align-middle">{{ solicitud['estado'] }}</td>
-                                {% if loop.index == 1 and usuario_tipo != 'comision' %}
+                                {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' %}
                                     <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                         <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
                                         <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>

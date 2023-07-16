@@ -523,6 +523,28 @@
             overflow-y: auto;
         }
 
+        .select {
+          width: 100%;
+          padding: 0.375rem 0.75rem;
+          font-size: 1rem;
+          font-weight: 400;
+          line-height: 1.5;
+          color: #ffffff;
+          vertical-align: middle;
+          background: transparent url('https://www.freeiconspng.com/uploads/arrow-up-icon-23.png') no-repeat;
+          background-size: 15px;
+          background-position:  right 10px center;
+          background-color: transparent;
+          background-clip: padding-box;
+          border: 1px solid #ced4da;
+          border-radius: 0.5rem; 
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          position: relative; 
+          overflow: hidden;
+      }
+
      /* Mobile */
 @media screen and (max-width: 576px) {
   header {
