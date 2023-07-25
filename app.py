@@ -347,7 +347,7 @@ def obtener_ects_asignatura(codigo_asignatura):
 
 @app.route('/usuario/<nombre_usuario>')
 def mostrar_solicitudes_usuario(nombre_usuario):
-    if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision':
+    if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision' or current_user.tipo == "alumno":
 
         connection = get_db()
         cursor = connection.cursor()
