@@ -347,6 +347,70 @@
             font-size: 12px;
         }
 
+        .solicitud-box {
+          position: absolute;
+          top: 80%;
+          left: 50%;
+          width: 50vw;
+          max-width: 800px;
+          padding: 40px;
+          transform: translate(-50%, -50%);
+          background: rgba(12, 60, 107, 0.548);
+          font-family: 'Lato', sans-serif;
+          box-sizing: border-box;
+          box-shadow: 0 15px 25px rgba(0, 0, 0, 0.322);
+          border-radius: 10px;
+        }
+
+        @media screen and (max-width: 768px) {
+        .solicitud-box {
+          width: 90vw;
+          padding: 20px;
+        }
+        }
+
+        .solicitud-box h2 {
+          margin: 0 0 30px;
+          padding: 0;
+          color: #fff;
+          text-align: center;
+        }
+
+        .solicitud-box .user-box {
+          position: relative;
+        }
+
+        .solicitud-box .user-box input {
+          width: 100%;
+          padding: 10px 0;
+          font-size: 16px;
+          color: #fff;
+          margin-bottom: 30px;
+          border: none;
+          border-bottom: 1px solid #fff;
+          outline: none;
+          background: transparent;
+        }
+
+        .solicitud-box .user-box label {
+          position: absolute;
+          top: 0;
+          left: 0;
+          padding: 10px 0;
+          font-size: 16px;
+          color: #fff;
+          pointer-events: none;
+          transition: .5s;
+        }
+
+        .solicitud-box .user-box input:focus~label,
+        .solicitud-box .user-box input:valid~label {
+          top: -20px;
+          left: 0;
+          color: #ffffff;
+          font-size: 12px;
+        }
+
         button {
         margin: 20px;
         }
