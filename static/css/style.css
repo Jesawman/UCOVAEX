@@ -290,6 +290,22 @@
           .form-group.required select:invalid:focus {
             box-shadow: 0 0 5px red;
           }
+
+          .form-control {
+              width: 100%;
+              padding: 10px;
+              font-size: 16px;
+              color: #333;
+              border: 1px solid #ccc;
+              border-radius: 5px;
+              outline: none;
+              transition: border-color 0.3s ease;
+          }
+          
+          .form-control:focus {
+              border-color: #ffffff;
+          }
+        
           
           .login-box {
             position: absolute;
@@ -348,68 +364,101 @@
         }
 
         .solicitud-box {
-          position: absolute;
-          top: 80%;
-          left: 50%;
-          width: 50vw;
-          max-width: 800px;
-          padding: 40px;
-          transform: translate(-50%, -50%);
-          background: rgba(12, 60, 107, 0.548);
-          font-family: 'Lato', sans-serif;
-          box-sizing: border-box;
-          box-shadow: 0 15px 25px rgba(0, 0, 0, 0.322);
-          border-radius: 10px;
+            position: relative;
+            margin-top: 40vh;
+            left: 50%;
+            width: 30vw;
+            padding: 40px;
+            transform: translate(-50%, -50%);
+            background: rgba(12, 60, 107, 0.548);
+            font-family: 'Lato', sans-serif;
+            box-sizing: border-box;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.322);
+            border-radius: 10px;
         }
-
+        
         @media screen and (max-width: 768px) {
-        .solicitud-box {
-          width: 90vw;
-          padding: 20px;
+            .solicitud-box {
+                width: 90vw;
+                padding: 20px;
+            }
         }
-        }
-
+        
         .solicitud-box h2 {
-          margin: 0 0 30px;
-          padding: 0;
-          color: #fff;
-          text-align: center;
+            margin: 4px 0 30px;
+            padding: 0;
+            color: #fff;
+            text-align: center;
         }
-
-        .solicitud-box .user-box {
-          position: relative;
+        
+        .solicitud-box form {
+            display: flex;
+            flex-direction: column;
         }
-
-        .solicitud-box .user-box input {
-          width: 100%;
-          padding: 10px 0;
-          font-size: 16px;
-          color: #fff;
-          margin-bottom: 30px;
-          border: none;
-          border-bottom: 1px solid #fff;
-          outline: none;
-          background: transparent;
+        
+        .solicitud-box .form-group {
+            margin-bottom: 20px;
         }
-
-        .solicitud-box .user-box label {
-          position: absolute;
-          top: 0;
-          left: 0;
-          padding: 10px 0;
-          font-size: 16px;
-          color: #fff;
-          pointer-events: none;
-          transition: .5s;
+        
+        .solicitud-box .form-group label {
+            font-size: 16px;
+            color: #fff;
         }
-
-        .solicitud-box .user-box input:focus~label,
-        .solicitud-box .user-box input:valid~label {
-          top: -20px;
-          left: 0;
-          color: #ffffff;
-          font-size: 12px;
+        
+        .solicitud-box .form-group input,
+        .solicitud-box .form-group select {
+            width: 100%;
+            padding: 10px 0;
+            font-size: 16px;
+            color: #fff;
+            border: none;
+            border-bottom: 1px solid #fff;
+            outline: none;
+            background: transparent;
         }
+        
+        .solicitud-box .form-group input:focus,
+        .solicitud-box .form-group select:focus {
+            border-bottom: 2px solid #fff;
+        }
+        
+        .solicitud-box .form-group input:focus ~ label,
+        .solicitud-box .form-group input:valid ~ label,
+        .solicitud-box .form-group select:focus ~ label,
+        .solicitud-box .form-group select:valid ~ label {
+            top: -25px;
+            left: 0;
+            font-size: 12px;
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .solicitud-box .form-group input:not(:focus):valid ~ label,
+        .solicitud-box .form-group select:not(:focus):valid ~ label {
+            top: -25px;
+            left: 0;
+            font-size: 12px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+        
+        .solicitud-box .btn-primary {
+            margin-top: 20px;
+            background-color: rgb(9, 136, 220);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .solicitud-box .btn-primary:hover {
+            background-color: rgb(7, 106, 172);
+        }
+      
+        option.gris {background-color: rgba(11, 112, 179, 0.786); font-size: 16px;}
 
         button {
         margin: 20px;
