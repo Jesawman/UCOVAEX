@@ -254,8 +254,8 @@ def enviar_solicitud():
                 c.execute("INSERT INTO relacion_asignaturas (codigo_eps, nombre_eps, codigo_destino, nombre_destino) VALUES (?, ?, ?, ?)",
                           (codigo_eps, nombre_eps, codigo_destino, nombre_destino))
                 
-                c.execute("INSERT INTO relacion_asignaturas_alumnos (usuario, codigo_eps, nombre_eps, codigo_destino, nombre_destino, estado) VALUES (?, ?, ?, ?, ?, ?)",
-                          (current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente"))
+                c.execute("INSERT INTO relacion_asignaturas_alumnos (usuario, codigo_eps, nombre_eps, codigo_destino, nombre_destino, estado, destino) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                          (current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
 
         conn.commit()
 
@@ -292,7 +292,7 @@ def administracion():
             c = conn.cursor()
 
             c.execute('''
-                SELECT usuario, nombre_destino,MAX(fecha) AS fecha, estado
+                SELECT usuario, destino,MAX(fecha) AS fecha, estado
                 FROM relacion_asignaturas_alumnos
                 GROUP BY usuario
                 ORDER BY usuario ASC

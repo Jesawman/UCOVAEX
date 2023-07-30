@@ -102,7 +102,7 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <table id="table" class="table"
+                <table id="table" class="fl-table"
                     data-toggle="table"
                     data-search="true"
                     data-filter-control="true"
@@ -112,7 +112,7 @@
                     <thead>
                         <tr>
                             <th data-field="usuario" data-filter-control="input" data-sortable="true">Nombre</th>
-                            <th data-field="nombre_destino" data-filter-control="input" data-sortable="true">Destino</th>
+                            <th data-field="destino" data-filter-control="input" data-sortable="true">Destino</th>
                             <th data-field="fecha" data-filter-control="input" data-sortable="true">Fecha</th>
                             <th data-field="estado" data-filter-control="input" data-sortable="true">Estado</th>
                         </tr>
@@ -121,7 +121,7 @@
                         {% for solicitud in solicitudes %}
                         <tr>
                             <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
-                            <td>{{ solicitud['nombre_destino'] }}</td>
+                            <td>{{ solicitud['destino'] }}</td>
                             <td>{{ solicitud['fecha'] }}</td>
                             <td>{{ solicitud['estado'] }}</td>
                         </tr>

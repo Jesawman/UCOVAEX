@@ -7,9 +7,25 @@
         <title>Crear Solicitud</title>
         <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" >
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.20/dist/sweetalert2.min.css">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
         <link rel="stylesheet" href="/static/css/style.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
+             function mostrarAlerta(mensaje, tipo) {
+                var alertElement = document.createElement('div');
+                alertElement.className = 'custom-alert';
+                alertElement.classList.add(tipo);
+                alertElement.innerText = mensaje;
+
+                var content = document.querySelector('.content');
+                content.insertBefore(alertElement, content.firstChild);
+
+                setTimeout(function () {
+                    content.removeChild(alertElement);
+                }, 5000);
+            }
+
             function mostrarTabla() {
                 document.getElementById('formulario-EPS').style.display = 'none';
                 document.getElementById('formulario-destino').style.display = 'flex';
@@ -19,41 +35,62 @@
                 var ects = document.getElementById('ects').value;
                 var destino = document.getElementById('destino').value;
                 var duracion = document.getElementById('duracion').value;
-
+        
                 var table = document.getElementById('datos-table');
                 var tbody = table.getElementsByTagName('tbody')[0];
                 var newRow = tbody.insertRow();
-
+        
                 newRow.insertCell().innerText = titulacion;
                 newRow.insertCell().innerText = codigo;
                 newRow.insertCell().innerText = nombre;
                 newRow.insertCell().innerText = ects;
                 newRow.insertCell().innerText = destino;
                 newRow.insertCell().innerText = duracion;
-
+        
                 document.getElementById('tabla-datos').style.display = 'block';
             }
 
+            function eliminarAsignatura(btn) {
+                var row = btn.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            }
+        
+            let asignaturaCounter = 1;
+        
             function agregarAsignatura() {
-                var nombreAsignatura = document.getElementById('nombre-asignatura').value;
-                var codigoAsignatura = document.getElementById('codigo-asignatura').value;
-                var ectsAsignatura = document.getElementById('ects-asignatura').value;
-                var urlAsignatura = document.getElementById('url-asignatura').value;
-
                 var table = document.getElementById('asignaturas-table');
                 var tbody = table.getElementsByTagName('tbody')[0];
-                var newRow = tbody.insertRow();
+                var lastRow = tbody.lastElementChild;
 
-                newRow.insertCell().innerText = nombreAsignatura;
-                newRow.insertCell().innerText = codigoAsignatura;
-                newRow.insertCell().innerText = ectsAsignatura;
-                newRow.insertCell().innerText = urlAsignatura;
+                if (!lastRow || isLastRowComplete(lastRow)) {
+                    var newRow = tbody.insertRow();
 
-                document.getElementById('nombre-asignatura').value = '';
-                document.getElementById('codigo-asignatura').value = '';
-                document.getElementById('ects-asignatura').value = '';
-                document.getElementById('url-asignatura').value = '';
-                document.getElementById('tabla-asignaturas').style.display = 'block';
+                    newRow.insertCell().innerHTML = `<input type="text" name="nombre-asignatura-${asignaturaCounter}" class="form-control">`;
+                    newRow.insertCell().innerHTML = `<input type="text" name="codigo-asignatura-${asignaturaCounter}" class="form-control">`;
+                    newRow.insertCell().innerHTML = `<input type="text" name="ects-asignatura-${asignaturaCounter}" class="form-control">`;
+                    newRow.insertCell().innerHTML = `<input type="text" name="url-asignatura-${asignaturaCounter}" class="form-control">`;
+                    var deleteButtonCell = newRow.insertCell();
+                    deleteButtonCell.innerHTML = '<button type="button" class="btn btn-danger btn-eliminar" onclick="eliminarAsignatura(this)">X</button>';
+
+                    asignaturaCounter++;
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Última Fila vacía...',
+                        text: 'Completa la última fila de la tabla antes de agregar una nueva asignatura.',
+                        confirmButtonColor: '#0988dc',
+                    })
+                }
+            }
+
+            function isLastRowComplete(lastRow) {
+                var inputs = lastRow.getElementsByTagName('input');
+                for (var i = 0; i < inputs.length; i++) {
+                    if (inputs[i].value.trim() === '') {
+                        return false;
+                    }
+                }
+                return true;
             }
             
             function enviarSolicitud() {
@@ -61,73 +98,86 @@
                 var tbody = table.getElementsByTagName('tbody')[0];
                 var rows = tbody.getElementsByTagName('tr');
                 var datos = [];
+                var lastRow = tbody.lastElementChild;
+                
+                if (isLastRowComplete(lastRow)) {
 
-                for (var i = 0; i < rows.length; i++) {
-                    var row = rows[i];
-                    var titulacion = row.cells[0].innerText;
-                    var codigo = row.cells[1].innerText;
-                    var nombre = row.cells[2].innerText;
-                    var ects = row.cells[3].innerText;
-                    var destino = row.cells[4].innerText;
-                    var duracion = row.cells[5].innerText;
-
-                    datos.push({
-                        titulacion: titulacion,
-                        codigo: codigo,
-                        nombre: nombre,
-                        ects: ects,
-                        destino: destino,
-                        duracion: duracion
-                    });
-                }
-
-                var asignaturasTable = document.getElementById('asignaturas-table');
-                var asignaturasTbody = asignaturasTable.getElementsByTagName('tbody')[0];
-                var asignaturasRows = asignaturasTbody.getElementsByTagName('tr');
-                var asignaturas = [];
-
-                for (var j = 0; j < asignaturasRows.length; j++) {
-                    var asignaturaRow = asignaturasRows[j];
-                    var nombreAsignatura = asignaturaRow.cells[0].innerText;
-                    var codigoAsignatura = asignaturaRow.cells[1].innerText;
-                    var ectsAsignatura = asignaturaRow.cells[2].innerText;
-                    var urlAsignatura = asignaturaRow.cells[3].innerText;
-
-                    asignaturas.push({
-                        nombre: nombreAsignatura,
-                        codigo: codigoAsignatura,
-                        ects: ectsAsignatura,
-                        url: urlAsignatura
-                    });
-                }
-
-                var solicitud = {
-                    datos: datos,
-                    asignaturas: asignaturas
-                };
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', '/enviar-solicitud', true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                        alert('Solicitud enviada correctamente');
-                        document.getElementById('formulario-EPS').reset();
-                        document.getElementById('formulario-destino').reset();
-                        tbody.innerHTML = '';
-                        asignaturasTbody.innerHTML = '';
-                        document.getElementById('tabla-datos').style.display = 'none';
-                        document.getElementById('tabla-asignaturas').style.display = 'none';
+                    for (var i = 0; i < rows.length; i++) {
+                        var row = rows[i];
+                        var titulacion = row.cells[0].innerText;
+                        var codigo = row.cells[1].innerText;
+                        var nombre = row.cells[2].innerText;
+                        var ects = row.cells[3].innerText;
+                        var destino = row.cells[4].innerText;
+                        var duracion = row.cells[5].innerText;
+            
+                        datos.push({
+                            titulacion: titulacion,
+                            codigo: codigo,
+                            nombre: nombre,
+                            ects: ects,
+                            destino: destino,
+                            duracion: duracion
+                        });
                     }
-                };
-                xhr.send(JSON.stringify(solicitud));
+            
+                    var asignaturasTable = document.getElementById('asignaturas-table');
+                    var asignaturasTbody = asignaturasTable.getElementsByTagName('tbody')[0];
+                    var asignaturasRows = asignaturasTbody.getElementsByTagName('tr');
+                    var asignaturas = [];
+            
+                    for (var j = 0; j < asignaturasRows.length; j++) {
+                        var asignaturaRow = asignaturasRows[j];
+                        var nombreAsignatura = asignaturaRow.cells[0].getElementsByTagName('input')[0].value;
+                        var codigoAsignatura = asignaturaRow.cells[1].getElementsByTagName('input')[0].value;
+                        var ectsAsignatura = asignaturaRow.cells[2].getElementsByTagName('input')[0].value;
+                        var urlAsignatura = asignaturaRow.cells[3].getElementsByTagName('input')[0].value;
+            
+                        asignaturas.push({
+                            nombre: nombreAsignatura,
+                            codigo: codigoAsignatura,
+                            ects: ectsAsignatura,
+                            url: urlAsignatura
+                        });
+                    }
+            
+                    var solicitud = {
+                        datos: datos,
+                        asignaturas: asignaturas
+                    };
+            
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/enviar-solicitud', true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                            alert('Solicitud enviada correctamente');
+                            document.getElementById('formulario-EPS').reset();
+                            document.getElementById('formulario-destino').reset();
+                            tbody.innerHTML = '';
+                            asignaturasTbody.innerHTML = '';
+                            document.getElementById('tabla-datos').style.display = 'none';
+                            document.getElementById('tabla-asignaturas').style.display = 'none';
+                        }
+                    };
+                    xhr.send(JSON.stringify(solicitud));
+                }
+                else{
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Formulario Incompleto...',
+                        text: 'Completa todos los campos para poder agregar un reconocimiento a tu solicitud.',
+                        confirmButtonColor: '#0988dc',
+                    })
+                }
             }
-
-            window.onload = function() {
+        
+            window.onload = function () {
                 document.getElementById('formulario-EPS').reset();
                 document.getElementById('formulario-destino').reset();
             };
         </script>
+        
         <style>
             .inner-header {
                 height: -1;
@@ -138,36 +188,65 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center
-        }
-        .button {
-            background-color: rgba(0, 172, 193, 1);
-            border: none;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-            display: inline-block;
-            text-decoration: none;
-            font-size: 16px;
-            margin: 0 10px 0 0;
-            border-radius: 20px;
-            transition: background-color 0.3s, color 0.3s;
-        }
+            }
 
-        .button:hover {
-            background-color: rgba(84, 58, 183, 1);
-            color: #fff;
-            text-decoration: none;
-        }
+            .button {
+                background-color: rgba(0, 172, 193, 1);
+                border: none;
+                color: #fff;
+                padding: 10px 20px;
+                text-align: center;
+                display: inline-block;
+                text-decoration: none;
+                font-size: 16px;
+                margin: 0 10px 0 0;
+                border-radius: 20px;
+                transition: background-color 0.3s, color 0.3s;
+            }
 
-        .inner-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            .button:hover {
+                background-color: rgba(84, 58, 183, 1);
+                color: #fff;
+                text-decoration: none;
+            }
 
-        .inner-header h1 {
-            margin: 0;
-        }
+            .inner-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .inner-header h1 {
+                margin: 0;
+            }
+
+            .table-container {
+                margin-top: 20px;
+            }
+
+            table {
+                table-layout: fixed;
+            }
+
+            th, td {
+                padding: 12px;
+                vertical-align: middle;
+                text-align: center;
+            }
+
+            .btn-eliminar {
+                background-color: #dc3545;
+                color: #fff;
+                border: none;
+                margin: 0.5vh;
+                padding: 5px 50px;
+                cursor: pointer;
+                align-items: center;
+            }
+
+            .btn-eliminar:hover {
+                background-color: #c82333;
+            }
         </style>
     </head>
     <body>
@@ -196,123 +275,78 @@
         </div>
         <center>
             <div class="content flex">
-                <div class="container">
-                    <div class="solicitud-box">
-                        <h2>Solicitud</h2>
-                        <form id="formulario-EPS" action="" method="post" style="display: flex; justify-content: center;">
-                            <div style="display: flex; flex-direction: column; margin-right: 20px;">
-                                <div class="form-group">
-                                    <h2>Asignatura a Convalidar</h2>
-                                    <label for="titulacion">Titulación</label>
-                                    <select name="titulacion" id="titulacion" class="form-control">
-                                        <option class="gris">Grado Ingeniería Eléctrica</option>
-                                        <option class="gris">Grado Ingeniería Electrónica Industrial</option>
-                                        <option class="gris">Grado Ingeniería Mecánica</option>
-                                        <option class="gris">Grado Ingeniería Informática</option>
-                                        <option class="gris">Doble Grado Ingeniería Energía y Rec. Minerales e Ing. Eléctrica</option>
+                <center><h2>Datos y Asignatura EPS</h2></center>
+                <div class="table-wrapper">
+                    <table class="fl-table" id="datos-table">
+                        <thead>
+                            <tr>
+                                <th>Titulación</th>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>ECTS</th>
+                                <th>Destino</th>
+                                <th>Duración</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select name="titulacion" id="titulacion" class="form-control" required>
+                                        <option>Grado Ingeniería Eléctrica</option>
+                                        <option>Grado Ingeniería Electrónica Industrial</option>
+                                        <option>Grado Ingeniería Mecánica</option>
+                                        <option>Grado Ingeniería Informática</option>
+                                        <option>Máster Ingeniería Industrial</option>
+                                        <option>Doble Grado Ingeniería Energía y Rec. Minerales e Ing. Eléctrica</option>
                                     </select>
-                                    <label for="codigo">Código</label>
-                                    <input type="text" name="codigo" id="codigo" class="form-control">
-                                    <label for="nombre">Nombre</label>
-                                    <input type="text" name="nombre" id="nombre" class="form-control">
-                                    <label for="ects">ECTS</label>
-                                    <input type="text" name="ects" id="ects" class="form-control">
-                                    <h2>Datos de la Estancia</h2>
-                                    <label for="destino">Destino</label>
-                                    <select name="destino" id="destino" class="form-control">
+                                </td>
+                                <td><input type="text" name="codigo" id="codigo" class="form-control" required></td>
+                                <td><input type="text" name="nombre" id="nombre" class="form-control" required></td>
+                                <td><input type="text" name="ects" id="ects" class="form-control" required></td>
+                                <td>
+                                    <select name="destino" id="destino" class="form-control" required>
                                         <option>Francia</option>
                                         <option>Inglaterra</option>
                                         <option>Italia</option>
                                     </select>
-                                    <label for="duracion">Duración</label>
-                                    <select name="duracion" id="duracion" class="form-control">
+                                </td>
+                                <td>
+                                    <select name="duracion" id="duracion" class="form-control" required>
                                         <option>1er cuatrimestre</option>
                                         <option>2o cuatrimestre</option>
                                         <option>Todo el año</option>
                                     </select>
-                                    <input type="button" value="Siguiente" class="btn btn-primary" style="margin-top: 10px; background-color:rgb(9, 136, 220)" onclick="mostrarTabla()">
-                                </div>
-                            </div>
-                        </form>
-                        <div class="container">
-                            <form action="" method="post" id="formulario-destino" style="display: none; justify-content: center;">
-                                <div style="display: flex; flex-direction: column; margin-right: 20px;">
-                                    <div class="form-group">
-                                        <h2>Asignatura Destino</h2>
-                                        <label for="nombre-asignatura">Nombre</label>
-                                        <input type="text" name="nombre-asignatura" id="nombre-asignatura" class="form-control">
-                                        <label for="codigo-asignatura">Código</label>
-                                        <input type="text" name="codigo-asignatura" id="codigo-asignatura" class="form-control">
-                                        <label for="ects-asignatura">ECTS</label>
-                                        <input type="text" name="ects-asignatura" id="ects-asignatura" class="form-control">
-                                        <label for="url-asignatura">URL</label>
-                                        <input type="text" name="url-asignatura" id="url-asignatura" class="form-control">
-                                        <input type="button" value="Añadir Asignatura" class="btn btn-primary" style="margin-top: 10px; background-color:rgb(9, 136, 220)" onclick="agregarAsignatura()">
-                                        <input type="button" value="Enviar Solicitud" class="btn btn-primary" style="margin-top: 10px; background-color:rgb(9, 136, 220)" onclick="enviarSolicitud()">
-                                    </div>
-                                </div>
-                            </form>
-                        </div>                
-                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <center><h2>Datos y Asignatura EPS</h2></center>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div id="scrolltable">
-                                <table class="table" id="datos-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Titulación</th>
-                                            <th>Código</th>
-                                            <th>Nombre</th>
-                                            <th>ECTS</th>
-                                            <th>Destino</th>
-                                            <th>Duración</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <center><h2>Asignaturas Destino</h2></center>
-                        </div>
-                    </div>
-                    <div class="row" id="tabla-asignaturas">
-                        <div class="col-md-12">
-                            <div id="scrolltable">
-                                <table id="asignaturas-table" class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Nombre</th>
-                                            <th>Código</th>
-                                            <th>ECTS</th>
-                                            <th>URL</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for asignatura in asignaturas %}
-                                        <tr>
-                                            <td>{{ asignatura.nombre }}</td>
-                                            <td>{{ asignatura.codigo }}</td>
-                                            <td>{{ asignatura.ects }}</td>
-                                            <td>{{ asignatura.url }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+
+                <center><h2>Asignaturas Destino</h2></center>
+                <div class="table-wrapper">
+                    <table id="asignaturas-table" class="fl-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Código</th>
+                                <th>ECTS</th>
+                                <th>URL</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" name="nombre-asignatura-1" class="form-control" required></td>
+                                <td><input type="text" name="codigo-asignatura-1" class="form-control" required></td>
+                                <td><input type="text" name="ects-asignatura-1" class="form-control" required></td>
+                                <td><input type="text" name="url-asignatura-1" class="form-control" required></td>
+                                <td><button type="button" class="btn btn-danger btn-eliminar" onclick="eliminarAsignatura(this)">X</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="agregarAsignatura()">Añadir Asignatura</button>
+                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="enviarSolicitud()">Enviar Solicitud</button>
             </div>
         </center>
     </body>
