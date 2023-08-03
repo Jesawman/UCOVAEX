@@ -1,9 +1,10 @@
 import datetime
 import sqlite3
 import threading
+import uuid
 
-from flask import (Flask, flash, redirect, render_template, request, session,
-                   url_for)
+from flask import (Flask, flash, jsonify, redirect, render_template, request,
+                   session, url_for)
 from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -103,7 +104,7 @@ def login():
                         return redirect(url_for('administracion'))
                 else:
                     new_hash = generate_password_hash(request.form['password'])
-                    c.execute("UPDATE usuarios SET contrasenia=? WHERE nombre_usuario=?", (new_hash, request.form['username']))
+                    c.execute("UPDATE usuarios SET password=? WHERE nombre_usuario=?", (new_hash, request.form['username']))
                     flash('Contraseña incorrecta')
                     return redirect(url_for('login'))
             else:
@@ -213,14 +214,14 @@ def get_nombre_asignatura_exterior(codigo_asignatura_extranjero):
         return None
 app.jinja_env.globals.update(get_nombre_asignatura_exterior=get_nombre_asignatura_exterior)
 
-from flask import redirect, url_for
-
-
 @app.route('/enviar-solicitud', methods=['POST'])
 def enviar_solicitud():
     solicitud = request.get_json()
     datos = solicitud['datos']
     asignaturas = solicitud['asignaturas']
+    
+
+    id_solicitud = str(uuid.uuid4())
 
     with get_db() as conn:
         c = conn.cursor()
@@ -250,12 +251,12 @@ def enviar_solicitud():
 
                 c.execute("INSERT INTO asignatura_destino (codigo, nombre, ects, url) VALUES (?, ?, ?, ?)",
                       (codigo_destino, nombre_destino, ects_destino, url))
-                
+
                 c.execute("INSERT INTO relacion_asignaturas (codigo_eps, nombre_eps, codigo_destino, nombre_destino) VALUES (?, ?, ?, ?)",
                           (codigo_eps, nombre_eps, codigo_destino, nombre_destino))
-                
-                c.execute("INSERT INTO relacion_asignaturas_alumnos (usuario, codigo_eps, nombre_eps, codigo_destino, nombre_destino, estado, destino) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                          (current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
+
+                c.execute("INSERT INTO relacion_asignaturas_alumnos (id_solicitud, usuario, codigo_eps, nombre_eps, codigo_destino, nombre_destino, estado, destino) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                          (id_solicitud, current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
 
         conn.commit()
 

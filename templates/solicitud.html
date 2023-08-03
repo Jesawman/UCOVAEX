@@ -12,51 +12,203 @@
         <link rel="stylesheet" href="/static/css/style.css">
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
-             function mostrarAlerta(mensaje, tipo) {
-                var alertElement = document.createElement('div');
-                alertElement.className = 'custom-alert';
-                alertElement.classList.add(tipo);
-                alertElement.innerText = mensaje;
-
-                var content = document.querySelector('.content');
-                content.insertBefore(alertElement, content.firstChild);
-
-                setTimeout(function () {
-                    content.removeChild(alertElement);
-                }, 5000);
+            function generarIdUnico() {
+                return Math.random().toString(36).substr(2, 9);
             }
 
-            function mostrarTabla() {
-                document.getElementById('formulario-EPS').style.display = 'none';
-                document.getElementById('formulario-destino').style.display = 'flex';
+            function generarIdSolicitudGlobal() {
+                if (idSolicitudGlobal === null) {
+                    idSolicitudGlobal = generarIdUnico();
+                }
+                return idSolicitudGlobal;
+            }
+
+            function validarFormularioAsignaturas() {
+                var datosTable = document.getElementById('datos-table');
+                var asignaturasTable = document.getElementById('asignaturas-table');
+
+                var datosRows = datosTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                var asignaturasRows = asignaturasTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+                var formularioIncompleto = false;
+
+                for (var i = 0; i < datosRows.length; i++) {
+                    var datosRow = datosRows[i];
+                    var titulacion = datosRow.cells[0].getElementsByTagName('select')[0].value;
+                    var codigo = datosRow.cells[1].getElementsByTagName('input')[0].value;
+                    var nombre = datosRow.cells[2].getElementsByTagName('input')[0].value;
+                    var ects = datosRow.cells[3].getElementsByTagName('input')[0].value;
+                    var destino = datosRow.cells[4].getElementsByTagName('select')[0].value;
+                    var duracion = datosRow.cells[5].getElementsByTagName('select')[0].value;
+
+                    if (titulacion.trim() === '' || codigo.trim() === '' || nombre.trim() === '' || ects.trim() === '' || destino.trim() === '' || duracion.trim() === '') {
+                        formularioIncompleto = true;
+                        break;
+                    }
+                }
+
+                for (var j = 0; j < asignaturasRows.length; j++) {
+                    var asignaturaRow = asignaturasRows[j];
+                    var nombreAsignatura = asignaturaRow.cells[0].getElementsByTagName('input')[0].value;
+                    var codigoAsignatura = asignaturaRow.cells[1].getElementsByTagName('input')[0].value;
+                    var ectsAsignatura = asignaturaRow.cells[2].getElementsByTagName('input')[0].value;
+                    var urlAsignatura = asignaturaRow.cells[3].getElementsByTagName('input')[0].value;
+
+                    if (nombreAsignatura.trim() === '' || codigoAsignatura.trim() === '' || ectsAsignatura.trim() === '' || urlAsignatura.trim() === '') {
+                        formularioIncompleto = true;
+                        break;
+                    }
+                }
+
+                if (formularioIncompleto) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Formulario Incompleto...',
+                        text: 'Completa todos los campos de ambas tablas antes de agregar una solicitud.',
+                        confirmButtonColor: '#0988dc',
+                    });
+                    return false;
+                }
+
+                return true;
+            }
+
+            function generarTablaAsignaturasDestino(asignaturasDestino) {
+                var tableHtml = '<table class="inner-fl-table">';
+                tableHtml += '<thead><tr><th>Nombre</th><th>Código</th><th>ECTS</th><th>URL</th></tr></thead>';
+                tableHtml += '<tbody>';
+
+                for (var i = 0; i < asignaturasDestino.length; i++) {
+                    var asignatura = asignaturasDestino[i];
+                    tableHtml += '<tr>';
+                    tableHtml += '<td>' + asignatura.nombre + '</td>';
+                    tableHtml += '<td>' + asignatura.codigo + '</td>';
+                    tableHtml += '<td>' + asignatura.ects + '</td>';
+                    tableHtml += '<td>' + asignatura.url + '</td>';
+                    tableHtml += '</tr>';
+                }
+
+                tableHtml += '</tbody></table>';
+
+                return tableHtml;
+            }
+
+            function bloquearCamposDatos() {
+                var titulacionInput = document.getElementById('titulacion');
+                var destinoInput = document.getElementById('destino');
+                var duracionInput = document.getElementById('duracion');
+
+                titulacionInput.disabled = true;
+                destinoInput.disabled = true;
+                duracionInput.disabled = true;
+            }
+
+            function agregarSolicitud() {
+                if (!validarFormularioAsignaturas()) {
+                    return;
+                }
+
                 var titulacion = document.getElementById('titulacion').value;
-                var codigo = document.getElementById('codigo').value;
-                var nombre = document.getElementById('nombre').value;
-                var ects = document.getElementById('ects').value;
                 var destino = document.getElementById('destino').value;
                 var duracion = document.getElementById('duracion').value;
-        
-                var table = document.getElementById('datos-table');
-                var tbody = table.getElementsByTagName('tbody')[0];
-                var newRow = tbody.insertRow();
-        
+
+                var asignaturasTable = document.getElementById('asignaturas-table');
+                var asignaturasRows = asignaturasTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                var asignaturasDestino = [];
+
+                for (var i = 0; i < asignaturasRows.length; i++) {
+                    var asignaturaRow = asignaturasRows[i];
+                    var nombreAsignatura = asignaturaRow.cells[0].getElementsByTagName('input')[0].value;
+                    var codigoAsignatura = asignaturaRow.cells[1].getElementsByTagName('input')[0].value;
+                    var ectsAsignatura = asignaturaRow.cells[2].getElementsByTagName('input')[0].value;
+                    var urlAsignatura = asignaturaRow.cells[3].getElementsByTagName('input')[0].value;
+                    var asignatura = {
+                        nombre: nombreAsignatura,
+                        codigo: codigoAsignatura,
+                        ects: ectsAsignatura,
+                        url: urlAsignatura
+                    };
+
+                    asignaturasDestino.push(asignatura);
+                }
+
+                var table = document.getElementById('solicitudes-table').getElementsByTagName('tbody')[0];
+                var newRow = table.insertRow();
+
                 newRow.insertCell().innerText = titulacion;
-                newRow.insertCell().innerText = codigo;
-                newRow.insertCell().innerText = nombre;
-                newRow.insertCell().innerText = ects;
+                newRow.insertCell().innerText = '';
+                newRow.insertCell().innerText = '';
+                newRow.insertCell().innerText = '';
                 newRow.insertCell().innerText = destino;
                 newRow.insertCell().innerText = duracion;
-        
-                document.getElementById('tabla-datos').style.display = 'block';
+
+                var asignaturasDestinoCell = newRow.insertCell();
+                asignaturasDestinoCell.innerHTML = generarTablaAsignaturasDestino(asignaturasDestino);
+
+                var codigoDatos = document.getElementById('codigo').value;
+                var nombreDatos = document.getElementById('nombre').value;
+                var ectsDatos = document.getElementById('ects').value;
+
+                newRow.cells[1].innerText = codigoDatos;
+                newRow.cells[2].innerText = nombreDatos;
+                newRow.cells[3].innerText = ectsDatos;
+
+                document.getElementById('codigo').value = '';
+                document.getElementById('nombre').value = '';
+                document.getElementById('ects').value = '';
+
+                bloquearCamposDatos();
+                limpiarCamposAsignaturas();
+                limpiarTablaAsignaturas();
+            }
+
+            function limpiarCamposDatos() {
+                var codigoInput = document.getElementById('codigo');
+                var nombreInput = document.getElementById('nombre');
+                var ectsInput = document.getElementById('ects');
+
+                codigoInput.value = '';
+                nombreInput.value = '';
+                ectsInput.value = '';
+            }
+
+            function limpiarCamposAsignaturas() {
+                var asignaturasTable = document.getElementById('asignaturas-table');
+                var inputs = asignaturasTable.getElementsByTagName('input');
+
+                for (var i = 0; i < inputs.length; i++) {
+                    inputs[i].value = '';
+                }
+            }
+
+            function limpiarTablaAsignaturas() {
+                var asignaturasTable = document.getElementById('asignaturas-table');
+                var tbody = asignaturasTable.getElementsByTagName('tbody')[0];
+                tbody.innerHTML = '';
+                agregarFilaAsignatura();
+            }
+
+            function agregarFilaAsignatura() {
+                var tbody = document.getElementById('asignaturas-table').getElementsByTagName('tbody')[0];
+                var newRow = tbody.insertRow();
+
+                newRow.insertCell().innerHTML = `<input type="text" name="nombre-asignatura-${asignaturaCounter}" class="form-control" required>`;
+                newRow.insertCell().innerHTML = `<input type="text" name="codigo-asignatura-${asignaturaCounter}" class="form-control" required>`;
+                newRow.insertCell().innerHTML = `<input type="text" name="ects-asignatura-${asignaturaCounter}" class="form-control" required>`;
+                newRow.insertCell().innerHTML = `<input type="text" name="url-asignatura-${asignaturaCounter}" class="form-control" required>`;
+                var deleteButtonCell = newRow.insertCell();
+                deleteButtonCell.innerHTML = '<button type="button" class="btn btn-danger btn-eliminar" onclick="eliminarAsignatura(this)">X</button>';
+
+                asignaturaCounter++;
             }
 
             function eliminarAsignatura(btn) {
                 var row = btn.parentNode.parentNode;
                 row.parentNode.removeChild(row);
             }
-        
+
             let asignaturaCounter = 1;
-        
+
             function agregarAsignatura() {
                 var table = document.getElementById('asignaturas-table');
                 var tbody = table.getElementsByTagName('tbody')[0];
@@ -92,93 +244,126 @@
                 }
                 return true;
             }
-            
-            function enviarSolicitud() {
-                var table = document.getElementById('datos-table');
-                var tbody = table.getElementsByTagName('tbody')[0];
-                var rows = tbody.getElementsByTagName('tr');
-                var datos = [];
-                var lastRow = tbody.lastElementChild;
-                
-                if (isLastRowComplete(lastRow)) {
 
-                    for (var i = 0; i < rows.length; i++) {
-                        var row = rows[i];
-                        var titulacion = row.cells[0].innerText;
-                        var codigo = row.cells[1].innerText;
-                        var nombre = row.cells[2].innerText;
-                        var ects = row.cells[3].innerText;
-                        var destino = row.cells[4].innerText;
-                        var duracion = row.cells[5].innerText;
-            
-                        datos.push({
+            function isLastRowComplete(lastRow) {
+                var inputs = lastRow.getElementsByTagName('input');
+                for (var i = 0; i < inputs.length; i++) {
+                    if (inputs[i].value.trim() === '') {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            function enviarSolicitudesSimultaneas() {
+                var solicitudesTable = document.getElementById('solicitudes-table');
+                var solicitudesRows = solicitudesTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                var totalSolicitudes = solicitudesRows.length;
+                var solicitudesEnviadas = 0;
+
+                function enviarSolicitud(index) {
+                    if (index >= totalSolicitudes) {
+                        alert('¡Solicitudes enviadas correctamente!');
+                        return;
+                    }
+
+                    var solicitudRow = solicitudesRows[index];
+                    var titulacion = solicitudRow.cells[0].innerText;
+                    var codigo = solicitudRow.cells[1].innerText;
+                    var nombre = solicitudRow.cells[2].innerText;
+                    var ects = solicitudRow.cells[3].innerText;
+                    var destino = solicitudRow.cells[4].innerText;
+                    var duracion = solicitudRow.cells[5].innerText;
+
+                    var asignaturasTable = solicitudRow.cells[6].getElementsByTagName('table')[0];
+                    var asignaturasRows = asignaturasTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                    var asignaturasDestino = [];
+
+                    for (var j = 0; j < asignaturasRows.length; j++) {
+                        var asignaturaRow = asignaturasRows[j];
+                        var nombreAsignatura = asignaturaRow.cells[0].innerText;
+                        var codigoAsignatura = asignaturaRow.cells[1].innerText;
+                        var ectsAsignatura = asignaturaRow.cells[2].innerText;
+                        var urlAsignatura = asignaturaRow.cells[3].innerText;
+                        var asignatura = {
+                            nombre: nombreAsignatura,
+                            codigo: codigoAsignatura,
+                            ects: ectsAsignatura,
+                            url: urlAsignatura
+                        };
+
+                        asignaturasDestino.push(asignatura);
+                    }
+
+                    enviarSolicitudAlServidor(titulacion, codigo, nombre, ects, destino, duracion, asignaturasDestino)
+                        .then(() => {
+                            solicitudesEnviadas++;
+                            enviarSolicitud(solicitudesEnviadas);
+                        })
+                        .catch(error => {
+                            console.error('Error al enviar la solicitud:', error);
+                        });
+                }
+
+                enviarSolicitud(0);
+            }
+
+            function enviarSolicitudAlServidor(titulacion, codigo, nombre, ects, destino, duracion, asignaturasDestino) {
+                return fetch('/enviar-solicitud', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        datos: [{
                             titulacion: titulacion,
                             codigo: codigo,
                             nombre: nombre,
                             ects: ects,
                             destino: destino,
                             duracion: duracion
-                        });
-                    }
-            
-                    var asignaturasTable = document.getElementById('asignaturas-table');
-                    var asignaturasTbody = asignaturasTable.getElementsByTagName('tbody')[0];
-                    var asignaturasRows = asignaturasTbody.getElementsByTagName('tr');
-                    var asignaturas = [];
-            
-                    for (var j = 0; j < asignaturasRows.length; j++) {
-                        var asignaturaRow = asignaturasRows[j];
-                        var nombreAsignatura = asignaturaRow.cells[0].getElementsByTagName('input')[0].value;
-                        var codigoAsignatura = asignaturaRow.cells[1].getElementsByTagName('input')[0].value;
-                        var ectsAsignatura = asignaturaRow.cells[2].getElementsByTagName('input')[0].value;
-                        var urlAsignatura = asignaturaRow.cells[3].getElementsByTagName('input')[0].value;
-            
-                        asignaturas.push({
-                            nombre: nombreAsignatura,
-                            codigo: codigoAsignatura,
-                            ects: ectsAsignatura,
-                            url: urlAsignatura
-                        });
-                    }
-            
-                    var solicitud = {
-                        datos: datos,
-                        asignaturas: asignaturas
-                    };
-            
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', '/enviar-solicitud', true);
-                    xhr.setRequestHeader('Content-Type', 'application/json');
-                    xhr.onreadystatechange = function () {
-                        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                            alert('Solicitud enviada correctamente');
-                            document.getElementById('formulario-EPS').reset();
-                            document.getElementById('formulario-destino').reset();
-                            tbody.innerHTML = '';
-                            asignaturasTbody.innerHTML = '';
-                            document.getElementById('tabla-datos').style.display = 'none';
-                            document.getElementById('tabla-asignaturas').style.display = 'none';
-                        }
-                    };
-                    xhr.send(JSON.stringify(solicitud));
-                }
-                else{
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Formulario Incompleto...',
-                        text: 'Completa todos los campos para poder agregar un reconocimiento a tu solicitud.',
-                        confirmButtonColor: '#0988dc',
+                        }],
+                        asignaturas: asignaturasDestino
                     })
-                }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Solicitud enviada correctamente');
+                    } else {
+                        console.error('Error al enviar la solicitud');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error de red:', error);
+                });
             }
-        
-            window.onload = function () {
-                document.getElementById('formulario-EPS').reset();
-                document.getElementById('formulario-destino').reset();
-            };
         </script>
         
         <style>
+            .inner-fl-table {
+                width: 100%;
+                border-collapse: collapse;
+                border: none;
+            }
+
+            .inner-fl-table th,
+            .inner-fl-table td {
+                padding: 8px;
+                text-align: center;
+            }
+
+            .inner-fl-table th {
+                background-color: #f2f2f2;
+            }
+
+            .inner-fl-table tbody tr:nth-child(odd) {
+                background-color: #f9f9f9;
+            }
+
+            .inner-fl-table tbody tr:hover {
+                background-color: #f5f5f5;
+            }
+
             .inner-header {
                 height: -1;
                 width: 100%;
@@ -346,7 +531,29 @@
                     </table>
                 </div>
                 <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="agregarAsignatura()">Añadir Asignatura</button>
-                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="enviarSolicitud()">Enviar Solicitud</button>
+                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="agregarSolicitud()">Añadir Solicitud</button>
+
+                <center><h2>Solicitudes a Enviar</h2></center>
+                <div id="solicitudes-a-enviar">
+                    <div class="table-wrapper">
+                        <table class="fl-table" id="solicitudes-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%;">Titulación</th>
+                                    <th style="width: 10%;">Código</th>
+                                    <th style="width: 10%;">Nombre</th>
+                                    <th style="width: 5%;">ECTS</th>
+                                    <th style="width: 10%;">Destino</th>
+                                    <th style="width: 10%;">Duración</th>
+                                    <th style="width: 35%;">Asignaturas Destino</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    
+                </div>
+                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="enviarSolicitudesSimultaneas()">Enviar Solicitudes</button>
             </div>
         </center>
     </body>
