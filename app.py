@@ -217,46 +217,47 @@ app.jinja_env.globals.update(get_nombre_asignatura_exterior=get_nombre_asignatur
 @app.route('/enviar-solicitud', methods=['POST'])
 def enviar_solicitud():
     solicitud = request.get_json()
-    datos = solicitud['datos']
-    asignaturas = solicitud['asignaturas']
-    
-
-    id_solicitud = str(uuid.uuid4())
+    solicitudes = solicitud['solicitudes']
 
     with get_db() as conn:
         c = conn.cursor()
+        id_solicitud = str(uuid.uuid4())
 
-        for dato in datos:
-            titulacion = dato['titulacion']
-            codigo = dato['codigo']
-            nombre = dato['nombre']
-            ects = dato['ects']
-            destino = dato['destino']
-            duracion = dato['duracion']
+        for solicitud in solicitudes:
+            datos = solicitud['datos']
+            asignaturas = solicitud['asignaturas']
 
-            c.execute("INSERT INTO asignatura_eps (titulacion, codigo, nombre, ects, destino, duracion) VALUES (?, ?, ?, ?, ?, ?)",
-                      (titulacion, codigo, nombre, ects, destino, duracion))
+            for dato in datos:
+                titulacion = dato['titulacion']
+                codigo = dato['codigo']
+                nombre = dato['nombre']
+                ects = dato['ects']
+                destino = dato['destino']
+                duracion = dato['duracion']
 
-            asignatura_eps_id = c.lastrowid
-            c.execute("SELECT codigo, nombre FROM asignatura_eps WHERE id = ?", (asignatura_eps_id,))
-            row = c.fetchone()
-            codigo_eps = row[0]
-            nombre_eps = row[1]
+                c.execute("INSERT INTO asignatura_eps (titulacion, codigo, nombre, ects, destino, duracion) VALUES (?, ?, ?, ?, ?, ?)",
+                          (titulacion, codigo, nombre, ects, destino, duracion))
 
-            for asignatura in asignaturas:
-                nombre_destino = asignatura['nombre']
-                codigo_destino = asignatura['codigo']
-                ects_destino = asignatura['ects']
-                url = asignatura['url']
+                asignatura_eps_id = c.lastrowid
+                c.execute("SELECT codigo, nombre FROM asignatura_eps WHERE id = ?", (asignatura_eps_id,))
+                row = c.fetchone()
+                codigo_eps = row[0]
+                nombre_eps = row[1]
 
-                c.execute("INSERT INTO asignatura_destino (codigo, nombre, ects, url) VALUES (?, ?, ?, ?)",
-                      (codigo_destino, nombre_destino, ects_destino, url))
+                for asignatura in asignaturas:
+                    nombre_destino = asignatura['nombre']
+                    codigo_destino = asignatura['codigo']
+                    ects_destino = asignatura['ects']
+                    url = asignatura['url']
 
-                c.execute("INSERT INTO relacion_asignaturas (codigo_eps, nombre_eps, codigo_destino, nombre_destino) VALUES (?, ?, ?, ?)",
-                          (codigo_eps, nombre_eps, codigo_destino, nombre_destino))
+                    c.execute("INSERT INTO asignatura_destino (codigo, nombre, ects, url) VALUES (?, ?, ?, ?)",
+                          (codigo_destino, nombre_destino, ects_destino, url))
 
-                c.execute("INSERT INTO relacion_asignaturas_alumnos (id_solicitud, usuario, codigo_eps, nombre_eps, codigo_destino, nombre_destino, estado, destino) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                          (id_solicitud, current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
+                    c.execute("INSERT INTO relacion_asignaturas (codigo_eps, nombre_eps, codigo_destino, nombre_destino) VALUES (?, ?, ?, ?)",
+                              (codigo_eps, nombre_eps, codigo_destino, nombre_destino))
+
+                    c.execute("INSERT INTO relacion_asignaturas_alumnos (id_solicitud, usuario, codigo_eps, nombre_eps, codigo_destino, nombre_destino, estado, destino) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                              (id_solicitud, current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
 
         conn.commit()
 

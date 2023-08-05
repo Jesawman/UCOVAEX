@@ -11,17 +11,9 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
         <link rel="stylesheet" href="/static/css/style.css">
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
         <script>
-            function generarIdUnico() {
-                return Math.random().toString(36).substr(2, 9);
-            }
-
-            function generarIdSolicitudGlobal() {
-                if (idSolicitudGlobal === null) {
-                    idSolicitudGlobal = generarIdUnico();
-                }
-                return idSolicitudGlobal;
-            }
+            let asignaturaCounter = 1;
 
             function validarFormularioAsignaturas() {
                 var datosTable = document.getElementById('datos-table');
@@ -207,8 +199,6 @@
                 row.parentNode.removeChild(row);
             }
 
-            let asignaturaCounter = 1;
-
             function agregarAsignatura() {
                 var table = document.getElementById('asignaturas-table');
                 var tbody = table.getElementsByTagName('tbody')[0];
@@ -245,98 +235,108 @@
                 return true;
             }
 
-            function isLastRowComplete(lastRow) {
-                var inputs = lastRow.getElementsByTagName('input');
-                for (var i = 0; i < inputs.length; i++) {
-                    if (inputs[i].value.trim() === '') {
-                        return false;
-                    }
+            function enviarSolicitudes() {
+                var solicitudes = [];
+                var table = document.getElementById('solicitudes-table').getElementsByTagName('tbody')[0];
+                var rows = table.getElementsByTagName('tr');
+                
+                if (rows.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Primero deberás añadir algún reconocimiento a la solicitud',
+                        text: 'Agrega al menos un reconocimiento antes de enviar.',
+                        confirmButtonColor: '#0988dc',
+                    });
+                    return;
                 }
-                return true;
-            }
 
-            function enviarSolicitudesSimultaneas() {
-                var solicitudesTable = document.getElementById('solicitudes-table');
-                var solicitudesRows = solicitudesTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-                var totalSolicitudes = solicitudesRows.length;
-                var solicitudesEnviadas = 0;
+                for (var i = 0; i < rows.length; i++) {
+                    var row = rows[i];
+                    var cells = row.cells;
 
-                function enviarSolicitud(index) {
-                    if (index >= totalSolicitudes) {
-                        alert('¡Solicitudes enviadas correctamente!');
-                        return;
-                    }
+                    if (cells.length >= 7) {
+                        var titulacion = cells[0].innerText;
+                        var codigo = cells[1].innerText;
+                        var nombre = cells[2].innerText;
+                        var ects = cells[3].innerText;
+                        var destino = cells[4].innerText;
+                        var duracion = cells[5].innerText;
 
-                    var solicitudRow = solicitudesRows[index];
-                    var titulacion = solicitudRow.cells[0].innerText;
-                    var codigo = solicitudRow.cells[1].innerText;
-                    var nombre = solicitudRow.cells[2].innerText;
-                    var ects = solicitudRow.cells[3].innerText;
-                    var destino = solicitudRow.cells[4].innerText;
-                    var duracion = solicitudRow.cells[5].innerText;
+                        var asignaturasTable = cells[6].getElementsByTagName('table')[0];
+                        var asignaturasRows = asignaturasTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                        var asignaturas = [];
 
-                    var asignaturasTable = solicitudRow.cells[6].getElementsByTagName('table')[0];
-                    var asignaturasRows = asignaturasTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-                    var asignaturasDestino = [];
+                        for (var j = 0; j < asignaturasRows.length; j++) {
+                            var asignaturaRow = asignaturasRows[j];
+                            var asignaturaCells = asignaturaRow.cells;
 
-                    for (var j = 0; j < asignaturasRows.length; j++) {
-                        var asignaturaRow = asignaturasRows[j];
-                        var nombreAsignatura = asignaturaRow.cells[0].innerText;
-                        var codigoAsignatura = asignaturaRow.cells[1].innerText;
-                        var ectsAsignatura = asignaturaRow.cells[2].innerText;
-                        var urlAsignatura = asignaturaRow.cells[3].innerText;
-                        var asignatura = {
-                            nombre: nombreAsignatura,
-                            codigo: codigoAsignatura,
-                            ects: ectsAsignatura,
-                            url: urlAsignatura
+                            if (asignaturaCells.length >= 4) {
+                                var nombreAsignatura = asignaturaCells[0].innerText;
+                                var codigoAsignatura = asignaturaCells[1].innerText;
+                                var ectsAsignatura = asignaturaCells[2].innerText;
+                                var urlAsignatura = asignaturaCells[3].innerText;
+                                var asignatura = {
+                                    nombre: nombreAsignatura,
+                                    codigo: codigoAsignatura,
+                                    ects: ectsAsignatura,
+                                    url: urlAsignatura
+                                };
+
+                                asignaturas.push(asignatura);
+                            }
+                        }
+
+                        var solicitud = {
+                            datos: [
+                                {
+                                    titulacion: titulacion,
+                                    codigo: codigo,
+                                    nombre: nombre,
+                                    ects: ects,
+                                    destino: destino,
+                                    duracion: duracion
+                                }
+                            ],
+                            asignaturas: asignaturas
                         };
 
-                        asignaturasDestino.push(asignatura);
+                        solicitudes.push(solicitud);
                     }
-
-                    enviarSolicitudAlServidor(titulacion, codigo, nombre, ects, destino, duracion, asignaturasDestino)
-                        .then(() => {
-                            solicitudesEnviadas++;
-                            enviarSolicitud(solicitudesEnviadas);
-                        })
-                        .catch(error => {
-                            console.error('Error al enviar la solicitud:', error);
-                        });
                 }
 
-                enviarSolicitud(0);
-            }
+                var postData = {
+                    solicitudes: solicitudes
+                };
 
-            function enviarSolicitudAlServidor(titulacion, codigo, nombre, ects, destino, duracion, asignaturasDestino) {
-                return fetch('/enviar-solicitud', {
+                fetch('/enviar-solicitud', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        datos: [{
-                            titulacion: titulacion,
-                            codigo: codigo,
-                            nombre: nombre,
-                            ects: ects,
-                            destino: destino,
-                            duracion: duracion
-                        }],
-                        asignaturas: asignaturasDestino
-                    })
+                    body: JSON.stringify(postData)
                 })
                 .then(response => {
                     if (response.ok) {
-                        console.log('Solicitud enviada correctamente');
+                        console.log('Requests sent successfully!');
                     } else {
-                        console.error('Error al enviar la solicitud');
+                        throw new Error('Error sending requests.');
                     }
                 })
                 .catch(error => {
-                    console.error('Error de red:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error enviando solicitudes',
+                        text: 'Hubo un problema al enviar las solicitudes. Inténtalo de nuevo más tarde.',
+                        confirmButtonColor: '#0988dc',
+                    });
                 });
             }
+
+            $(document).ready(function () {
+                $('#agregar-solicitud-btn').on('click', agregarSolicitud);
+                $('#agregar-asignatura-btn').on('click', agregarAsignatura);
+                $('#enviar-solicitudes-btn').on('click', enviarSolicitudes);
+            });
         </script>
         
         <style>
@@ -530,10 +530,10 @@
                         </tbody>
                     </table>
                 </div>
-                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="agregarAsignatura()">Añadir Asignatura</button>
-                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="agregarSolicitud()">Añadir Solicitud</button>
+                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" id="agregar-asignatura-btn">Añadir Asignatura</button>
+                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" id="agregar-solicitud-btn">Añadir Solicitud</button>
 
-                <center><h2>Solicitudes a Enviar</h2></center>
+                <center><h2>Solicitud</h2></center>
                 <div id="solicitudes-a-enviar">
                     <div class="table-wrapper">
                         <table class="fl-table" id="solicitudes-table">
@@ -551,9 +551,9 @@
                             <tbody>
                             </tbody>
                         </table>
-                    
+                    </div>
                 </div>
-                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" onclick="enviarSolicitudesSimultaneas()">Enviar Solicitudes</button>
+                <button class="btn btn-primary" style="background-color:rgb(9, 136, 220); margin-top: 10px;" id="enviar-solicitudes-btn">Enviar Solicitudes</button>
             </div>
         </center>
     </body>
