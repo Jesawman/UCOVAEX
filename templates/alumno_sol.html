@@ -61,29 +61,30 @@
 
 <body>
     <div class="header">
-            <div class="inner-header">
-                <h1>UCOVAEX</h1>
-                <form action="{{ url_for('logout') }}" method="post">
-                <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
-                <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
-                </form>
-            </div>
-            <div>
-                <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                    viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
-                    <defs>
-                        <path id="gentle-wave"
-                            d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
-                    </defs>
-                    <g class="parallax">
-                        <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
-                        <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
-                        <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
-                        <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
-                    </g>
-                </svg>
-            </div>
+        <div class="inner-header">
+            <h1>UCOVAEX</h1>
+            <form action="{{ url_for('logout') }}" method="post">
+            <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
+            <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+            </form>
         </div>
+        <div>
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                <defs>
+                    <path id="gentle-wave"
+                        d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+                </g>
+            </svg>
+        </div>
+    </div>
+    <div id="solicitudes-container"></div>
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
@@ -107,7 +108,7 @@
                             <th>ECTS</th>
                             <th>URL</th>
                             <th>Estado</th>
-                            {% if usuario_tipo != 'comision' %}
+                            {% if usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
                                 <th>Acciones</th>
                             {% endif %}
                         </tr>
@@ -125,11 +126,11 @@
                                 <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
                                 <td class="align-middle">{{ solicitud['url'] }}</td>
                                 <td class="align-middle">{{ solicitud['estado'] }}</td>
-                                {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' %}
+                                {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
                                     <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                        <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
-                                        <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
-                                        <button type="button" class="btn btn-primary" onclick="enviarComision('{{ solicitud['codigo_uco'] }}')">Enviar</button>
+                                        <button type="button" class="btn btn-success" data-codigo="{{ solicitud['codigo_uco'] }}" onclick="aprobarSolicitud(this)">Aprobar</button>
+                                        <button type="button" class="btn btn-danger" data-codigo="{{ solicitud['codigo_uco'] }}" onclick="denegarSolicitud(this)">Denegar</button>
+                                        <button type="button" class="btn btn-primary" data-codigo="{{ solicitud['codigo_uco'] }}" onclick="enviarComision(this)">Enviar</button>
                                     </td>
                                 {% endif %}
                             </tr>
@@ -165,6 +166,13 @@
                 </div>
             {% endfor %}
         </div>
+    </div>
+
+    <div class="pagination">
+        <button onclick="paginaAnterior()" class="button">Anterior</button>
+        <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button onclick="paginaSiguiente()" class="button">Siguiente</button>
+    </div>
 </body>
 </html>
 
@@ -261,4 +269,39 @@
             comentariosToggle.textContent = "Comentarios ▲";
         }
     }
+
+    var solicitudesContainer = document.getElementById("solicitudes-container");
+
+    var solicitudesPorPagina = 5;
+
+    var totalPaginas = Math.ceil(solicitudesDestino.length / solicitudesPorPagina);
+
+    var paginaActual = 1;
+
+    function mostrarSolicitudesEnPagina(pagina) {
+        solicitudesContainer.innerHTML = ""; 
+        var inicio = (pagina - 1) * solicitudesPorPagina;
+        var fin = inicio + solicitudesPorPagina;
+        
+        for (var i = inicio; i < fin && i < solicitudesDestino.length; i++) {
+            solicitudesContainer.appendChild(fila);
+        }
+    }
+
+    mostrarSolicitudesEnPagina(paginaActual);
+
+    function paginaSiguiente() {
+        if (paginaActual < totalPaginas) {
+            paginaActual++;
+            mostrarSolicitudesEnPagina(paginaActual);
+        }
+    }
+
+    function paginaAnterior() {
+        if (paginaActual > 1) {
+            paginaActual--;
+            mostrarSolicitudesEnPagina(paginaActual);
+        }
+    }
+
 </script>

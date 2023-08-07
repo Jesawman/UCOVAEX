@@ -174,7 +174,7 @@ def solicitud():
         return render_template('solicitud.html')
     else:
         logout_user()
-        flash('Acceso denegado. Por favor, inicia sesión como alumno.')
+        flash('Acceso denegado. Por favor, inicia sesión con el usuario correcto.')
         return redirect(url_for('login'))
 
 @app.route('/solicitud/<int:id>/eliminar', methods=['GET'])
@@ -191,7 +191,7 @@ def eliminar_solicitud(id):
 def get_nombre_asignatura_uco(codigo_asignatura_uco):
     conn = get_db();
     cursor = conn.cursor()
-    cursor.execute('SELECT nombre_uco FROM asignaturas_uco WHERE codigo_asignatura_uco = ?', 
+    cursor.execute('SELECT nombre_uco FROM asignaturas_uco WHERE codigo_asignatura_uco = ?',
                    (codigo_asignatura_uco,))
     asignatura_uco = cursor.fetchone()
     
@@ -304,7 +304,7 @@ def administracion():
             return render_template('administracion.html', solicitudes=solicitudes)
     else:
         logout_user()
-        flash('Acceso denegado. Por favor, inicia sesión como alumno.')
+        flash('Acceso denegado. Por favor, inicia sesión con el usuario correcto.')
         return redirect(url_for('login'))
     
 def obtener_url_asignatura(codigo_asignatura):
@@ -371,7 +371,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         destino = destino_result[0] if destino_result else None
 
         cursor.execute("""
-            SELECT nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado
+            SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
             ORDER BY nombre_eps
@@ -402,6 +402,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
 
             if asignatura_uco in grupos_solicitudes:
                 grupos_solicitudes[asignatura_uco].append({
+                    'id_solicitud': solicitud[0],
                     'nombre_uco': nombre_eps,
                     'codigo_uco': codigo_eps,
                     'nombre_destino': nombre_destino,
@@ -410,7 +411,6 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                     'ects_destino': obtener_ects_asignatura(codigo_destino),
                     'url': obtener_url_asignatura(codigo_destino),
                     'estado': estado
-
                 })
             else:
                 grupos_solicitudes[asignatura_uco] = [{
@@ -427,7 +427,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios)
     else:
         logout_user()
-        flash('Acceso denegado. Por favor, inicia sesión como alumno.')
+        flash('Acceso denegado. Por favor, inicia sesión con el usuario correcto.')
         return redirect(url_for('login'))
     
 @app.route('/aprobar', methods=['POST'])

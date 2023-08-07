@@ -317,7 +317,16 @@
                 })
                 .then(response => {
                     if (response.ok) {
-                        console.log('Requests sent successfully!');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Solicitudes enviadas correctamente',
+                            text: 'Espere un momento mientras la página se recarga.',
+                            confirmButtonColor: '#0988dc',
+                        });
+
+                        setTimeout(function() {
+                            location.reload();
+                        }, 3000);
                     } else {
                         throw new Error('Error sending requests.');
                     }
@@ -438,10 +447,14 @@
         <div class="header">
             <div class="inner-header">
                 <h1>UCOVAEX</h1>
-                <form action="{{ url_for('logout') }}" method="post"">
-                    <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
-                </form>
+                <div style="display: flex; align-items: center;">
+                    <a href="{{ url_for('mostrar_solicitudes_usuario', nombre_usuario=current_user.username) }}" class="button" style="margin-right: 10px;">Mostrar solicitudes</a>
+                    <form action="{{ url_for('logout') }}" method="post">
+                        <button type="submit" class="button">Cerrar sesión</button>
+                    </form>
+                </div>
             </div>
+        </div>
             <div>
                 <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                     viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
