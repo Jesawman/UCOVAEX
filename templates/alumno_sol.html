@@ -105,7 +105,7 @@
             {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
                 {% set solicitud_actual = vector_id_solicitud[loop.index-1] %}
                 {% if solicitud_actual != solicitud_pasada.prev or loop.index == 1%}
-                    <h2>Solicitud {{ solicitud['fecha'] }}</h2>
+                    <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
                 {% endif %}
                 <table class="table">
                     <thead>

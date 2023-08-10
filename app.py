@@ -381,6 +381,19 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             destino = None
 
         cursor.execute("""
+            SELECT fecha
+            FROM relacion_asignaturas_alumnos
+            WHERE usuario = ?
+            ORDER BY id_solicitud, nombre_eps
+        """, (nombre_usuario,))
+        fecha = cursor.fetchall()
+
+        fechas = []
+        for f in fecha:
+            fecha = f[0]
+            fechas.append(fecha)
+
+        cursor.execute("""
             SELECT id_solicitud
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
@@ -455,11 +468,11 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 }]
 
         if alumno is None and current_user.tipo == 'alumno':
-            return render_template('solicitud.html', usuario_tipo=tipo_usuario)
+            return render_template('solicitud.html')
         elif alumno is None:
-            return render_template('administracion.html', usuario_tipo=tipo_usuario)
+            return render_template('administracion.html')
 
-        return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud)
+        return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud, fechas=fechas)
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión como alumno.')
