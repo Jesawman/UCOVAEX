@@ -450,7 +450,8 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                     'ects_uco': obtener_ects_asignatura(codigo_eps),
                     'ects_destino': obtener_ects_asignatura(codigo_destino),
                     'url': obtener_url_asignatura(codigo_destino),
-                    'estado': estado
+                    'estado': estado,
+                    'fecha' : fecha
                 }]
 
         if alumno is None and current_user.tipo == 'alumno':
@@ -458,7 +459,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         elif alumno is None:
             return render_template('administracion.html', usuario_tipo=tipo_usuario)
 
-        return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, id_solicitud=id_solicitud, vector_id_solicitud=vector_id_solicitud)
+        return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud)
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión como alumno.')
