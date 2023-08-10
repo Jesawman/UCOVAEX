@@ -3,10 +3,11 @@ import sqlite3
 import threading
 import uuid
 
-from flask import (Flask, flash, jsonify, redirect, render_template, request,
-                   session, url_for)
+from flask import (Flask, flash, redirect, render_template, request, session,
+                   url_for)
 from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
+from jinja2 import Environment, FileSystemLoader
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
@@ -353,28 +354,50 @@ def mostrar_solicitudes_usuario(nombre_usuario):
 
         connection = get_db()
         cursor = connection.cursor()
+
         cursor.execute("SELECT usuario FROM relacion_asignaturas_alumnos WHERE usuario = ?", (nombre_usuario,))
-        alumno = cursor.fetchone()[0]
+        alumno_row = cursor.fetchone()
+        if alumno_row is not None:
+            alumno = alumno_row[0]
+        else:
+            alumno = None
+
         comentarios = obtener_comentarios()
 
         cursor.execute("""
             SELECT destino
             FROM asignatura_eps
             WHERE codigo IN (
-                SELECT codigo_destino
+                SELECT codigo_eps
                 FROM relacion_asignaturas_alumnos
                 WHERE usuario = ?
             )
             LIMIT 1
         """, (nombre_usuario,))
         destino_result = cursor.fetchone()
-        destino = destino_result[0] if destino_result else None
+        if destino_result is not None:
+            destino = destino_result[0]
+        else:
+            destino = None
 
         cursor.execute("""
-            SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado
+            SELECT id_solicitud
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY nombre_eps
+            ORDER BY id_solicitud, nombre_eps
+        """, (nombre_usuario,))
+        id_solicitud_aux = cursor.fetchall()
+
+        vector_id_solicitud = []
+        for id in id_solicitud_aux:
+            id_solicitud_aux = id[0]
+            vector_id_solicitud.append(id_solicitud_aux)
+
+        cursor.execute("""
+            SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado, fecha
+            FROM relacion_asignaturas_alumnos
+            WHERE usuario = ?
+            ORDER BY id_solicitud, nombre_eps
         """, (nombre_usuario,))
         solicitudes = cursor.fetchall()
 
@@ -383,8 +406,11 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             FROM usuarios
             WHERE nombre_usuario = ?
         """, (current_user.get_id(),))
-        tipo_usuario_row  = cursor.fetchone()
-        tipo_usuario = tipo_usuario_row[0]
+        tipo_usuario_row = cursor.fetchone()
+        if tipo_usuario_row is not None:
+            tipo_usuario = tipo_usuario_row[0]
+        else:
+            tipo_usuario = None
         print("tipo_usuario:")
         print(tipo_usuario)
 
@@ -392,17 +418,18 @@ def mostrar_solicitudes_usuario(nombre_usuario):
 
         grupos_solicitudes = {}
         for solicitud in solicitudes:
-            nombre_eps = solicitud[0]
-            codigo_eps = solicitud[1]
-            nombre_destino = solicitud[2]
-            codigo_destino = solicitud[3]
-            estado =  solicitud[4]
+            id_solicitud = solicitud[0]
+            nombre_eps = solicitud[1]
+            codigo_eps = solicitud[2]
+            nombre_destino = solicitud[3]
+            codigo_destino = solicitud[4]
+            estado = solicitud[5]
+            fecha = solicitud[6]
 
             asignatura_uco = nombre_eps if nombre_eps else codigo_eps
 
             if asignatura_uco in grupos_solicitudes:
                 grupos_solicitudes[asignatura_uco].append({
-                    'id_solicitud': solicitud[0],
                     'nombre_uco': nombre_eps,
                     'codigo_uco': codigo_eps,
                     'nombre_destino': nombre_destino,
@@ -410,7 +437,9 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                     'ects_uco': obtener_ects_asignatura(codigo_eps),
                     'ects_destino': obtener_ects_asignatura(codigo_destino),
                     'url': obtener_url_asignatura(codigo_destino),
-                    'estado': estado
+                    'estado': estado,
+                    'fecha' : fecha
+
                 })
             else:
                 grupos_solicitudes[asignatura_uco] = [{
@@ -424,10 +453,15 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                     'estado': estado
                 }]
 
-        return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios)
+        if alumno is None and current_user.tipo == 'alumno':
+            return render_template('solicitud.html', usuario_tipo=tipo_usuario)
+        elif alumno is None:
+            return render_template('administracion.html', usuario_tipo=tipo_usuario)
+
+        return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, id_solicitud=id_solicitud, vector_id_solicitud=vector_id_solicitud)
     else:
         logout_user()
-        flash('Acceso denegado. Por favor, inicia sesión con el usuario correcto.')
+        flash('Acceso denegado. Por favor, inicia sesión como alumno.')
         return redirect(url_for('login'))
     
 @app.route('/aprobar', methods=['POST'])
