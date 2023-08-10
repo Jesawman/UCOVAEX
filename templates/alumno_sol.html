@@ -136,7 +136,7 @@
                                 <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
                                 <td class="align-middle">{{ solicitud['url'] }}</td>
                                 <td class="align-middle">{{ solicitud['estado'] }}</td>
-                                {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' %}
+                                {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
                                     <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                         <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
                                         <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
@@ -155,6 +155,7 @@
                         </div>
                     </div>
                 {% endif %}
+                {% if usuario_tipo != 'alumno' %}
                 <div class="row">
                     <div class="col-md-12">
                         <h4>
@@ -174,6 +175,7 @@
                         <hr size="1px" color="#00acc1" />
                     </div>
                 </div>
+                {% endif %}
                 {% set solicitud_pasada.prev = vector_id_solicitud[loop.index-1] %}
             {% endfor %}
         </div>
