@@ -95,84 +95,97 @@
                 </div>
             </div>
             
-            {% set solicitud_pasada = namespace(prev=vector_id_solicitud[0]) %}
+            <div id="slider-container">
+                {% set solicitud_pasada = namespace(prev=vector_id_solicitud[0]) %}
 
-            {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
-                {% set solicitud_actual = vector_id_solicitud[loop.index-1] %}
-                {% if solicitud_actual != solicitud_pasada.prev or loop.index == 1%}
-                    <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
-                {% endif %}
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Asignatura UCO</th>
-                            <th>Código</th>
-                            <th>ECTS</th>
-                            <th>Asignaturas del Destino</th>
-                            <th>Código</th>
-                            <th>ECTS</th>
-                            <th>URL</th>
-                            <th>Estado</th>
-                            {% if usuario_tipo != 'comision' %}
-                                <th>Acciones</th>
-                            {% endif %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for solicitud in solicitudes_destino %}
+                {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
+                    {% set solicitud_actual = vector_id_solicitud[loop.index-1] %}
+                    {% if loop.index == 1 %}
+                    <div class="slide">
+                        <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
+                    {% endif %}
+                    {% if solicitud_actual != solicitud_pasada.prev%}
+                    </div>
+                    <div class="slide">
+                        <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
+                    {% endif %}
+                    <table class="table">
+                        <thead>
                             <tr>
-                                {% if loop.index == 1 %}
-                                    <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['nombre_uco'] }}</td>
-                                    <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['codigo_uco'] }}</td>
-                                    <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['ects_uco'] }}</td>
-                                {% endif %}
-                                <td class="align-middle">{{ solicitud['nombre_destino'] }}</td>
-                                <td class="align-middle">{{ solicitud['codigo_destino'] }}</td>
-                                <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
-                                <td class="align-middle">{{ solicitud['url'] }}</td>
-                                <td class="align-middle">{{ solicitud['estado'] }}</td>
-                                {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
-                                    <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                        <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
-                                        <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
-                                        <button type="button" class="btn btn-primary" onclick="enviarComision('{{ solicitud['codigo_uco'] }}')">Enviar</button>
-                                    </td>
+                                <th>Asignatura UCO</th>
+                                <th>Código</th>
+                                <th>ECTS</th>
+                                <th>Asignaturas del Destino</th>
+                                <th>Código</th>
+                                <th>ECTS</th>
+                                <th>URL</th>
+                                <th>Estado</th>
+                                {% if usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
+                                    <th>Acciones</th>
                                 {% endif %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% if usuario_tipo == 'comision' %}
+                        </thead>
+                        <tbody>
+                            {% for solicitud in solicitudes_destino %}
+                                <tr>
+                                    {% if loop.index == 1 %}
+                                        <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['nombre_uco'] }}</td>
+                                        <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['codigo_uco'] }}</td>
+                                        <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['ects_uco'] }}</td>
+                                    {% endif %}
+                                    <td class="align-middle">{{ solicitud['nombre_destino'] }}</td>
+                                    <td class="align-middle">{{ solicitud['codigo_destino'] }}</td>
+                                    <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
+                                    <td class="align-middle">{{ solicitud['url'] }}</td>
+                                    <td class="align-middle">{{ solicitud['estado'] }}</td>
+                                    {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
+                                        <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                            <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
+                                            <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
+                                            <button type="button" class="btn btn-primary" onclick="enviarComision('{{ solicitud['codigo_uco'] }}')">Enviar</button>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if usuario_tipo == 'comision' %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <textarea style="margin : 1vh" class="form-control" rows="auto" placeholder="Comentario" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" id="comentario-{{ alumno }}-{{ asignatura_uco }}"></textarea>
+                                <center><button style="margin: 1vh; margin-bottom: 5vh;" type="button" class="button" onclick="guardarComentario('{{ alumno }}', '{{ asignatura_uco }}')">Guardar Comentario</button></center>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if usuario_tipo != 'alumno' %}
                     <div class="row">
                         <div class="col-md-12">
-                            <textarea style="margin : 1vh" class="form-control" rows="auto" placeholder="Comentario" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" id="comentario-{{ alumno }}-{{ asignatura_uco }}"></textarea>
-                            <center><button style="margin: 1vh; margin-bottom: 5vh;" type="button" class="button" onclick="guardarComentario('{{ alumno }}', '{{ asignatura_uco }}')">Guardar Comentario</button></center>
+                            <h4>
+                                <button type="button" class="button" onclick="toggleComentarios('{{ alumno }}', '{{ asignatura_uco }}')">
+                                    <span id="comentarios-toggle-{{ alumno }}-{{ asignatura_uco }}">Comentarios ▼</span>
+                                </button>
+                            </h4>
+                            <ul id="comentarios-{{ alumno }}-{{ asignatura_uco }}" class="comentarios-lista" style="display: none;">
+                                {% for comentario in comentarios %}
+                                    {% if comentario[0] == alumno and comentario[1] == asignatura_uco %}
+                                        <li class="comentario-item">
+                                            {{ comentario[2] }}
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                            <hr size="1px" color="#00acc1" />
                         </div>
                     </div>
-                {% endif %}
-                {% if usuario_tipo != 'alumno' %}
-                <div class="row">
-                    <div class="col-md-12">
-                        <h4>
-                            <button type="button" class="button" onclick="toggleComentarios('{{ alumno }}', '{{ asignatura_uco }}')">
-                                <span id="comentarios-toggle-{{ alumno }}-{{ asignatura_uco }}">Comentarios ▼</span>
-                            </button>
-                        </h4>
-                        <ul id="comentarios-{{ alumno }}-{{ asignatura_uco }}" class="comentarios-lista" style="display: none;">
-                            {% for comentario in comentarios %}
-                                {% if comentario[0] == alumno and comentario[1] == asignatura_uco %}
-                                    <li class="comentario-item">
-                                        {{ comentario[2] }}
-                                    </li>
-                                {% endif %}
-                            {% endfor %}
-                        </ul>
-                        <hr size="1px" color="#00acc1" />
-                    </div>
-                </div>
-                {% endif %}
-                {% set solicitud_pasada.prev = vector_id_solicitud[loop.index-1] %}
-            {% endfor %}
+                    {% endif %}
+                    {% set solicitud_pasada.prev = vector_id_solicitud[loop.index-1] %}
+                {% endfor %}
+            </div>
+            <div class="slider-controls">
+                <button class="button" style="font-size: 14px;" onclick="prevSlide()">Anterior</button>
+                <div id="slider-indicators" class="slider-indicators" onclick="updateIndicators()""></div>
+                <button class="button" style="font-size: 14px;margin-left: 10px ;" onclick="nextSlide()">Siguiente</button>
+            </div>
         </div>
 </body>
 </html>
@@ -270,4 +283,61 @@
             comentariosToggle.textContent = "Comentarios ▲";
         }
     }
+
+    var currentSlide = 0;
+    var slides = document.querySelectorAll('.slide');
+
+    function showSlide(slideIndex) {
+        if (slideIndex < 0) {
+            slideIndex = slides.length - 1;
+        } else if (slideIndex >= slides.length) {
+            slideIndex = 0;
+        }
+
+        for (var i = 0; i < slides.length; i++) {
+            slides[i].classList.remove('active');
+        }
+
+        slides[slideIndex].classList.add('active');
+        currentSlide = slideIndex;
+    }
+
+    showSlide(currentSlide);
+
+    function nextSlide() {
+        showSlide(currentSlide + 1);
+        updateIndicators();
+    }
+
+    function prevSlide() {
+        showSlide(currentSlide - 1);
+        updateIndicators();
+    }
+
+    showSlide(currentSlide);
+
+    function updateIndicators() {
+        var indicatorsContainer = document.getElementById('slider-indicators');
+        indicatorsContainer.innerHTML = '';
+
+        for (var i = 0; i < slides.length; i++) {
+            var indicator = document.createElement('div');
+            indicator.classList.add('indicator');
+            
+            if (i === currentSlide) {
+                indicator.classList.add('active'); // Agrega la clase 'active' al indicador actual
+            }
+            
+            indicator.addEventListener('click', function (index) {
+                return function () {
+                    showSlide(index);
+                };
+            }(i));
+            
+            indicatorsContainer.appendChild(indicator);
+        }
+    }
+
+    updateIndicators();
+
 </script>
