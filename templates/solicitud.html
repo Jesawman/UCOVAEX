@@ -161,6 +161,8 @@
                 var asignaturasDestinoCell = newRow.insertCell();
                 asignaturasDestinoCell.innerHTML = generarTablaAsignaturasDestino(asignaturasDestino);
 
+                newRow.insertCell().innerHTML = '<button type="button" class="btn btn-danger btn-eliminar" onclick="eliminarSolicitud(this)">X</button>';
+
                 var codigoDatos = document.getElementById('codigo').value;
                 var nombreDatos = document.getElementById('nombre').value;
                 var ectsDatos = document.getElementById('ects').value;
@@ -172,15 +174,10 @@
                 document.getElementById('codigo').value = '';
                 document.getElementById('nombre').value = '';
                 document.getElementById('ects').value = '';
-                
+
                 bloquearCamposDatos();
                 limpiarCamposAsignaturas();
                 limpiarTablaAsignaturas();
-
-                localStorage.setItem('titulacion_' + userId, titulacion);
-                localStorage.setItem('destino_' + userId, destino);
-                localStorage.setItem('duracion_' + userId, duracion);
-                
             }
 
             function limpiarCamposDatos() {
@@ -228,6 +225,11 @@
                 row.parentNode.removeChild(row);
             }
 
+            function eliminarSolicitud(btn) {
+                var row = btn.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            }
+
             function agregarAsignatura() {
                 var table = document.getElementById('asignaturas-table');
                 var tbody = table.getElementsByTagName('tbody')[0];
@@ -265,6 +267,17 @@
             }
 
             function enviarSolicitudes() {
+                var userId = getCookieValue('user_id');
+    
+                var titulacion = document.getElementById('titulacion').value;
+                var destino = document.getElementById('destino').value;
+                var duracion = document.getElementById('duracion').value;
+
+                localStorage.setItem('titulacion_' + userId, titulacion);
+                localStorage.setItem('destino_' + userId, destino);
+                localStorage.setItem('duracion_' + userId, duracion);
+
+
                 var solicitudes = [];
                 var table = document.getElementById('solicitudes-table').getElementsByTagName('tbody')[0];
                 var rows = table.getElementsByTagName('tr');
@@ -371,12 +384,12 @@
             }
 
             $(document).ready(function () {
-                var userId = getCookieValue('user_id');
-
+            var userId = getCookieValue('user_id');
+            
                 var storedTitulacion = localStorage.getItem('titulacion_' + userId);
                 var storedDestino = localStorage.getItem('destino_' + userId);
                 var storedDuracion = localStorage.getItem('duracion_' + userId);
-
+                
                 if (storedTitulacion) {
                     $('#titulacion').val(storedTitulacion);
                 }
@@ -391,6 +404,7 @@
                 $('#agregar-asignatura-btn').on('click', agregarAsignatura);
                 $('#enviar-solicitudes-btn').on('click', enviarSolicitudes);
             });
+    </script>
         </script>
         
         <style>
@@ -548,9 +562,9 @@
                                 <td><input type="text" name="ects" id="ects" class="form-control" required></td>
                                 <td>
                                     <select name="destino" id="destino" class="form-control" required>
-                                        <option>Francia</option>
-                                        <option>Inglaterra</option>
-                                        <option>Italia</option>
+                                        {% for pais in paises %}
+                                            <option>{{ pais[0] }}</option>
+                                        {% endfor %}
                                     </select>
                                 </td>
                                 <td>
@@ -604,6 +618,7 @@
                                     <th style="width: 10%;">Destino</th>
                                     <th style="width: 10%;">Duración</th>
                                     <th style="width: 35%;">Asignaturas Destino</th>
+                                    <th style="width: 10%;"></th>
                                 </tr>
                             </thead>
                             <tbody>

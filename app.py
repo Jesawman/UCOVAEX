@@ -145,7 +145,6 @@ asignaturas = []
 @app.route('/solicitud', methods=['GET', 'POST'])
 def solicitud():
     if current_user.tipo == 'alumno':
-
         if request.method == 'POST':
             if 'nombre' in request.form:
                 titulacion = request.form.get('titulacion')
@@ -172,7 +171,14 @@ def solicitud():
 
                 return render_template('solicitud.html', mostrar_formulario_asignatura=True, asignaturas=asignaturas)
 
-        return render_template('solicitud.html')
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT nombre FROM paises")
+        paises = cursor.fetchall()
+        db.close()
+
+        return render_template('solicitud.html', paises=paises)
+
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión con el usuario correcto.')
