@@ -555,6 +555,44 @@ def obtener_comentarios():
 
     return comentarios
 
+def query_db(query, args=(), one=False):
+    conn = get_db()
+    cur = conn.execute(query, args)
+    result = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return (result[0] if result else None) if one else result
+
+@app.route('/database', methods=['GET', 'POST'])
+def database():
+    tables = query_db("SELECT name FROM sqlite_master WHERE type='table';")
+    selected_table = request.form.get('table_name')
+    
+    if selected_table:
+        columns = query_db(f"PRAGMA table_info({selected_table});")
+        rows = query_db(f"SELECT * FROM {selected_table};")
+        return render_template('database.html', tables=tables, selected_table=selected_table, columns=columns, rows=rows)
+    
+    return render_template('database.html', tables=tables, selected_table=None)
+
+@app.route('/edit/<table_name>/<int:row_id>', methods=['POST'])
+def edit_row(table_name, row_id):
+    columns = query_db(f"PRAGMA table_info({table_name});")
+
+    update_values = []
+    for column in columns[1:]:
+        value = request.form.get(f'col_{column[1]}')
+        update_values.append(value)
+
+    update_values.append(row_id)
+
+    update_query = f"UPDATE {table_name} SET {', '.join([f'{column[1]}=?' for column in columns[1:]])} WHERE rowid = ?"
+
+    query_db(update_query, update_values)
+
+    return redirect(url_for('database'))
+
+
 @app.route('/logout', methods=['POST'])
 @login_required
 def logout():
