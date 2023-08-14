@@ -565,15 +565,20 @@ def query_db(query, args=(), one=False):
 
 @app.route('/database', methods=['GET', 'POST'])
 def database():
-    tables = query_db("SELECT name FROM sqlite_master WHERE type='table';")
-    selected_table = request.form.get('table_name')
-    
-    if selected_table:
-        columns = query_db(f"PRAGMA table_info({selected_table});")
-        rows = query_db(f"SELECT * FROM {selected_table};")
-        return render_template('database.html', tables=tables, selected_table=selected_table, columns=columns, rows=rows)
-    
-    return render_template('database.html', tables=tables, selected_table=None)
+    if current_user.tipo == 'administrador':
+        tables = query_db("SELECT name FROM sqlite_master WHERE type='table';")
+        selected_table = request.form.get('table_name')
+        
+        if selected_table:
+            columns = query_db(f"PRAGMA table_info({selected_table});")
+            rows = query_db(f"SELECT * FROM {selected_table};")
+            return render_template('database.html', tables=tables, selected_table=selected_table, columns=columns, rows=rows)
+        
+        return render_template('database.html', tables=tables, selected_table=None)
+    else:
+        logout_user()
+        flash('Acceso denegado. Por favor, inicia sesión como alumno.')
+        return redirect(url_for('login'))
 
 @app.route('/edit/<table_name>/<int:row_id>', methods=['POST'])
 def edit_row(table_name, row_id):
@@ -592,6 +597,26 @@ def edit_row(table_name, row_id):
 
     return redirect(url_for('database'))
 
+@app.route('/add/<table_name>', methods=['POST'])
+def add_row(table_name):
+    columns = query_db(f"PRAGMA table_info({table_name});")
+    
+    new_values = [request.form.get(f'add_{column[1]}') for column in columns]
+    placeholders = ', '.join(['?' for _ in columns])
+    
+    insert_query = f"INSERT INTO {table_name} VALUES ({placeholders})"
+    
+    query_db(insert_query, new_values)
+    
+    return redirect(url_for('database'))
+
+@app.route('/delete/<table_name>/<int:row_id>', methods=['POST'])
+def delete_row(table_name, row_id):
+    delete_query = f"DELETE FROM {table_name} WHERE rowid = ?"
+    
+    query_db(delete_query, [row_id])
+    
+    return 'Fila eliminada', 200
 
 @app.route('/logout', methods=['POST'])
 @login_required
