@@ -15,6 +15,23 @@
         crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
+        .select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .select:focus {
+            outline: none;
+            border-color: #6c63ff;
+            box-shadow: 0px 0px 5px rgba(108, 99, 255, 0.5);
+        }
+
+
         .inner-header {
                 height: -1;
                 width: 100%;
@@ -98,14 +115,12 @@
                     <label>Contraseña</label>
                 </div>
                 <div class="user-box">
-                    <div class="select-wrapper">
-                        <select name="tipo" class="select" required="">
-                            <option class="gris" value="alumno">Alumno</option>
-                            <option class="gris" value="administrador">Administrador</option>
-                            <option class="gris" value="comisión">Comisión</option>
-                            <option class="gris" value="asistente">Asistente</option>
-                        </select>
-                    </div>
+                    <select name="tipo" class="select" required="">
+                        <option value="alumno">Alumno</option>
+                        <option value="administrador">Administrador</option>
+                        <option value="comision">Comisión</option>
+                        <option value="asistente">Asistente</option>
+                    </select>
                 </div>
                 <center><button type="submit" class="custom-btn btn-1">
                     <span></span>

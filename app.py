@@ -129,6 +129,10 @@ def register():
             conn = get_db()
             c = conn.cursor()
             c.execute("INSERT INTO usuarios (nombre_usuario, password, tipo) VALUES (?, ?, ?)", (username, hashpass, tipo))
+            
+            if tipo == 'comision':
+                c.execute("INSERT INTO comisiones (usuario, comision) VALUES (?, ?)", (username, 'no asignada'))
+                
             conn.commit()
             flash('Usuario registrado')
             conn.close()
@@ -143,6 +147,7 @@ def register():
 asignaturas = []
 
 @app.route('/solicitud', methods=['GET', 'POST'])
+@login_required
 def solicitud():
     if current_user.tipo == 'alumno':
         if request.method == 'POST':
@@ -222,6 +227,7 @@ def get_nombre_asignatura_exterior(codigo_asignatura_extranjero):
 app.jinja_env.globals.update(get_nombre_asignatura_exterior=get_nombre_asignatura_exterior)
 
 @app.route('/enviar-solicitud', methods=['POST'])
+@login_required
 def enviar_solicitud():
     solicitud = request.get_json()
     solicitudes = solicitud['solicitudes']
@@ -355,6 +361,7 @@ def obtener_ects_asignatura(codigo_asignatura):
 
 
 @app.route('/usuario/<nombre_usuario>')
+@login_required
 def mostrar_solicitudes_usuario(nombre_usuario):
     if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision' or current_user.tipo == "alumno":
 
@@ -485,6 +492,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         return redirect(url_for('login'))
     
 @app.route('/aprobar', methods=['POST'])
+@login_required
 def aprobar_solicitud():
     codigo_uco = request.form['codigo_uco']
 
@@ -501,6 +509,7 @@ def aprobar_solicitud():
 
 
 @app.route('/denegar', methods=['POST'])
+@login_required
 def denegar_solicitud():
     codigo_uco = request.form['codigo_uco']
 
@@ -517,6 +526,7 @@ def denegar_solicitud():
 
 
 @app.route('/enviar', methods=['POST'])
+@login_required
 def enviar_comision():
     codigo_uco = request.form['codigo_uco']
 
@@ -532,6 +542,7 @@ def enviar_comision():
     return redirect(request.referrer)
 
 @app.route("/guardar_comentario", methods=["POST"])
+@login_required
 def guardar_comentario():
     alumno = request.form.get("alumno")
     asignatura = request.form.get("asignatura")
@@ -563,7 +574,36 @@ def query_db(query, args=(), one=False):
     conn.close()
     return (result[0] if result else None) if one else result
 
+@app.route('/comisiones', methods=['GET', 'POST'])
+@login_required
+def comisiones():
+    if current_user.tipo == 'administrador':
+        if request.method == 'POST':
+            conn = get_db()
+            cursor = conn.cursor()
+
+            comision = request.form.get('comision')
+            usuario = request.form.get('usuario')
+
+            cursor.execute("INSERT OR REPLACE INTO comisiones (usuario, comision) VALUES (?, ?);", (usuario, comision))
+            conn.commit()
+            conn.close()
+
+            flash('Comisión actualizada exitosamente.')
+
+        connection = get_db()
+        cursor = connection.cursor()
+        cursor.execute("SELECT usuario, comision FROM comisiones ORDER BY comision")
+        comisiones = cursor.fetchall()
+
+        return render_template('comisiones.html', user=current_user, comisiones=comisiones)
+    else:
+        logout_user()
+        flash('Acceso denegado. Inicia sesión como usuario de comisión.')
+        return redirect(url_for('login'))
+
 @app.route('/database', methods=['GET', 'POST'])
+@login_required
 def database():
     if current_user.tipo == 'administrador':
         tables = query_db("SELECT name FROM sqlite_master WHERE type='table';")
@@ -581,6 +621,7 @@ def database():
         return redirect(url_for('login'))
 
 @app.route('/edit/<table_name>/<int:row_id>', methods=['POST'])
+@login_required
 def edit_row(table_name, row_id):
     columns = query_db(f"PRAGMA table_info({table_name});")
 
@@ -598,6 +639,7 @@ def edit_row(table_name, row_id):
     return redirect(url_for('database'))
 
 @app.route('/add/<table_name>', methods=['POST'])
+@login_required
 def add_row(table_name):
     columns = query_db(f"PRAGMA table_info({table_name});")
     
@@ -611,6 +653,7 @@ def add_row(table_name):
     return redirect(url_for('database'))
 
 @app.route('/delete/<table_name>/<int:row_id>', methods=['POST'])
+@login_required
 def delete_row(table_name, row_id):
     delete_query = f"DELETE FROM {table_name} WHERE rowid = ?"
     
