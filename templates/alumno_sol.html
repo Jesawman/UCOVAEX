@@ -121,6 +121,9 @@
                                 <th>URL</th>
                                 <th>Estado</th>
                                 {% if usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
+                                    <th>Comisión</th>
+                                {% endif %}
+                                {% if usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
                                     <th>Acciones</th>
                                 {% endif %}
                             </tr>
@@ -138,11 +141,13 @@
                                     <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
                                     <td class="align-middle">{{ solicitud['url'] }}</td>
                                     <td class="align-middle">{{ solicitud['estado'] }}</td>
+                                    {% if loop.index == 1 %}
+                                    <td class="align-middle"></td>
+                                    {% endif %}
                                     {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                             <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
                                             <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
-                                            <button type="button" class="btn btn-primary" onclick="enviarComision('{{ solicitud['codigo_uco'] }}')">Enviar</button>
                                         </td>
                                     {% endif %}
                                 </tr>
@@ -211,22 +216,6 @@
         var form = document.createElement('form');
         form.method = 'POST';
         form.action = '/denegar';
-
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'codigo_uco';
-        input.value = codigo_uco;
-
-        form.appendChild(input);
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    function enviarComision(codigo_uco) {
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/enviar';
 
         var input = document.createElement('input');
         input.type = 'hidden';

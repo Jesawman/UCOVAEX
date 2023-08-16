@@ -236,6 +236,14 @@ def enviar_solicitud():
         c = conn.cursor()
         id_solicitud = str(uuid.uuid4())
 
+        usuario_comision_mapping = {
+            'Grado Ingeniería Informática': 'comision_gii',
+            'Grado Ingeniería Eléctrica': 'comision_gie',
+            'Grado Ingeniería Mecánica': 'comision_gim',
+            'Grado Ingeniería Electrónica Industrial': 'comision_giei',
+            'Doble Grado Ingeniería Energía y Rec. Minerales e Ing. Eléctrica': 'comision_mii'
+        }
+
         for solicitud in solicitudes:
             datos = solicitud['datos']
             asignaturas = solicitud['asignaturas']
@@ -264,13 +272,17 @@ def enviar_solicitud():
                     url = asignatura['url']
 
                     c.execute("INSERT INTO asignatura_destino (codigo, nombre, ects, url) VALUES (?, ?, ?, ?)",
-                          (codigo_destino, nombre_destino, ects_destino, url))
+                              (codigo_destino, nombre_destino, ects_destino, url))
 
                     c.execute("INSERT INTO relacion_asignaturas (codigo_eps, nombre_eps, codigo_destino, nombre_destino) VALUES (?, ?, ?, ?)",
                               (codigo_eps, nombre_eps, codigo_destino, nombre_destino))
 
                     c.execute("INSERT INTO relacion_asignaturas_alumnos (id_solicitud, usuario, codigo_eps, nombre_eps, codigo_destino, nombre_destino, estado, destino) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                               (id_solicitud, current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
+
+                usuario_comision = usuario_comision_mapping.get(titulacion, 'comision_default')
+                c.execute("INSERT INTO asignaciones (id_solicitud, usuario_comision) VALUES (?, ?)",
+                          (id_solicitud, usuario_comision))
 
         conn.commit()
 
