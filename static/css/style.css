@@ -348,7 +348,7 @@
           }
           
           .indicator.active {
-              background-color: #00a6a6;
+              background-color: #0988dc;
           }
           .login-box {
             position: absolute;
@@ -564,7 +564,14 @@
             border-radius: 5px;
             position: relative;
         }
-    
+        
+        .opciones-eliminar {
+            display: inline-block;
+            margin-left: 10px;
+            color: red;
+            cursor: pointer;
+        }
+
         .comentario-content {
             display: inline-block;
             width: 90%;
@@ -576,7 +583,7 @@
             top: 5px;
             right: 5px;
         }
-    
+        
         .comentarios-section {
             height: 200px;
             overflow-y: auto;
@@ -604,6 +611,22 @@
           overflow: hidden;
       }
 
+      
+      .info-alumno {
+        background-color: #0988dc;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    
+      }
+      .info-alumno h5 {
+          margin: 0;
+          font-size: 18px;
+          color: #ffffff;
+          margin-bottom: 10px;
+      }
+      
 @media screen and (max-width: 576px) {
   header {
     padding: 5px;

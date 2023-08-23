@@ -206,7 +206,9 @@
             <h1>UCOVAEX</h1>
             <form action="{{ url_for('logout') }}" method="post">
                 <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
-                <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+                <button type="submit" class="button" style="font-size: 14px;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
             </form>
         </div>
         <div>
@@ -254,7 +256,6 @@
                                     </td>
                                     <td class="action-cell">
                                         <button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>
-                                        <!-- El botón de eliminación se agregará dinámicamente -->
                                     </td>
                                 </tr>
                             {% endfor %}

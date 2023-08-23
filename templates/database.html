@@ -141,6 +141,19 @@
             });
         }
 
+        var scrollPosition = sessionStorage.getItem('scrollPosition');
+
+        if (scrollPosition) {
+            window.scrollTo(0, scrollPosition);
+        }
+
+        window.onload = function() {
+            document.body.style.display = "block";
+        };
+
+        window.onbeforeunload = function() {
+            sessionStorage.setItem('scrollPosition', window.scrollY);
+        };
     </script>
 
     <style>
@@ -201,7 +214,9 @@
             <h1>UCOVAEX</h1>
             <form action="{{ url_for('logout') }}" method="post">
                 <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
-                <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+                <button type="submit" class="button" style="font-size: 14px;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
             </form>
         </div>
         <div>
@@ -251,9 +266,9 @@
                             <tbody>
                                 {% for row in rows %}
                                     <tr data-row-id="{{ row.id }}">
-                                        {% for column in columns %}
-                                            <td><input type="text" name="col_{{ column[1] }}" value="{{ row[column[1]] }}" class="form-control" readonly required></td>
-                                        {% endfor %}
+                                    {% for column in columns %}
+                                        <td><input type="text" name="col_{{ column[1] }}" value="{{ row[column[1]] }}" class="form-control" readonly required></td>
+                                    {% endfor %}
                                         <td class="action-cell">
                                             <button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>
                                             <button class="button" type="button" onclick="deleteRow(this)" style="background-color: #dc3545;">Eliminar</button>

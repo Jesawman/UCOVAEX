@@ -13,7 +13,9 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
         integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
     <style>
         .inner-header {
                 height: -1;
@@ -69,7 +71,9 @@
                     {% else %}
                         <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
                     {% endif %}
-                    <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+                    <button type="submit" class="button" style="font-size: 14px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </form>
             </div>
             <div>
@@ -90,8 +94,10 @@
         </div>
         <div class="container">
             <div class="row">
-                <div class="col-md-12">
-                    <h2>Solicitudes de {{ alumno }} a {{ destino }}</h2>
+                <div class="info-alumno">
+                    <h5>Solicitudes de {{ alumno }}</h5>
+                    <h5>De {{ titulacion }}</h5>
+                    <h5>Con destino a {{ destino }}</h5>
                 </div>
             </div>
             
@@ -103,13 +109,18 @@
                     {% if loop.index == 1 %}
                     <div class="slide">
                         <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
+                        {% for asignacion in asignaciones %}
+                        {% if asignacion[0] == solicitud_actual %}
+                            <center><h4>Asignada a {{ asignacion[1] }}</h4></center>
+                        {% endif %}
+                    {% endfor %}
                     {% endif %}
                     {% if solicitud_actual != solicitud_pasada.prev%}
                     </div>
                     <div class="slide">
                         <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
                     {% endif %}
-                    <table class="table">
+                    <table class="fl-table">
                         <thead>
                             <tr>
                                 <th>Asignatura UCO</th>
@@ -120,9 +131,6 @@
                                 <th>ECTS</th>
                                 <th>URL</th>
                                 <th>Estado</th>
-                                {% if usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
-                                    <th>Comisión</th>
-                                {% endif %}
                                 {% if usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
                                     <th>Acciones</th>
                                 {% endif %}
@@ -141,9 +149,6 @@
                                     <td class="align-middle">{{ solicitud['ects_destino'] }}</td>
                                     <td class="align-middle">{{ solicitud['url'] }}</td>
                                     <td class="align-middle">{{ solicitud['estado'] }}</td>
-                                    {% if loop.index == 1 %}
-                                    <td class="align-middle"></td>
-                                    {% endif %}
                                     {% if loop.index == 1 and usuario_tipo != 'comision' and usuario_tipo != 'asistente' and usuario_tipo != 'alumno' %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                             <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
@@ -158,7 +163,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <textarea style="margin : 1vh" class="form-control" rows="auto" placeholder="Comentario" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" id="comentario-{{ alumno }}-{{ asignatura_uco }}"></textarea>
-                                <center><button style="margin: 1vh; margin-bottom: 5vh;" type="button" class="button" onclick="guardarComentario('{{ alumno }}', '{{ asignatura_uco }}')">Guardar Comentario</button></center>
+                                <center><button style="margin: 1vh; margin-bottom: 5vh; background-color: #0988dc;" type="button" class="button" onclick="guardarComentario('{{ alumno }}', '{{ asignatura_uco }}')">Guardar Comentario</button></center>
                             </div>
                         </div>
                     {% endif %}
@@ -166,7 +171,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <h4>
-                                <button type="button" class="button" onclick="toggleComentarios('{{ alumno }}', '{{ asignatura_uco }}')">
+                                <button style="background-color: #0988dc;" type="button" class="button" onclick="toggleComentarios('{{ alumno }}', '{{ asignatura_uco }}')">
                                     <span id="comentarios-toggle-{{ alumno }}-{{ asignatura_uco }}">Comentarios ▼</span>
                                 </button>
                             </h4>
@@ -174,12 +179,19 @@
                                 {% for comentario in comentarios %}
                                     {% if comentario[0] == alumno and comentario[1] == asignatura_uco %}
                                         <li class="comentario-item">
-                                            {{ comentario[2] }}
+                                            <div class="comentario-content" onclick="mostrarOpcionesEliminar(this)">
+                                                {{ comentario[2] }}
+                                            </div>
+                                            {% if usuario_tipo == 'comision' %}
+                                                <div class="opciones-eliminar" style="display: none;">
+                                                    <span class="eliminar-enlace" onclick="eliminarComentario('{{ alumno }}', '{{ asignatura_uco }}', '{{ comentario[2] }}')">Eliminar</span>
+                                                </div>
+                                            {% endif %}
                                         </li>
                                     {% endif %}
                                 {% endfor %}
                             </ul>
-                            <hr size="1px" color="#00acc1" />
+                            <hr size="1px" color="#0988dc" />
                         </div>
                     </div>
                     {% endif %}
@@ -187,9 +199,9 @@
                 {% endfor %}
             </div>
             <div class="slider-controls">
-                <button class="button" style="font-size: 14px;" onclick="prevSlide()">Anterior</button>
+                <button class="button" style="font-size: 14px; background-color: #0988dc;" onclick="prevSlide()">Anterior</button>
                 <div id="slider-indicators" class="slider-indicators" onclick="updateIndicators()""></div>
-                <button class="button" style="font-size: 14px;margin-left: 10px ;" onclick="nextSlide()">Siguiente</button>
+                <button class="button" style="font-size: 14px;margin-left: 10px ; background-color: #0988dc;" onclick="nextSlide()">Siguiente</button>
             </div>
         </div>
 </body>
@@ -228,26 +240,152 @@
         form.submit();
     }
 
+    function mostrarOpcionesEliminar(comentarioContent) {
+        var opcionesEliminar = comentarioContent.querySelector('.opciones-eliminar');
+
+        if (opcionesEliminar) {
+            opcionesEliminar.style.display = "inline-block";
+        }
+    }
+
     function guardarComentario(alumno, asignatura) {
         var comentario = document.getElementById("comentario-" + alumno + "-" + asignatura).value;
 
-        var comentarioItem = document.createElement("li");
-        comentarioItem.classList.add("comentario-item");
+        fetch("/guardar_comentario", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                alumno: alumno,
+                asignatura: asignatura,
+                comentario: comentario,
+            }),
+        })
+        .then(response => response.json())
+        .then(result => {
+            Swal.fire({
+                icon: "success",
+                title: "¡Comentario guardado!",
+                text: result.message,
+                confirmButtonColor: '#0988dc',
+            });
 
-        var comentarioContent = document.createElement("div");
-        comentarioContent.classList.add("comentario-content");
-        comentarioContent.textContent = comentario;
+            var comentarioItem = document.createElement("li");
+            comentarioItem.classList.add("comentario-item");
 
+            var comentarioContent = document.createElement("div");
+            comentarioContent.classList.add("comentario-content");
+            comentarioContent.textContent = comentario;
 
-        comentarioItem.appendChild(comentarioContent);
+            comentarioItem.appendChild(comentarioContent);
 
-        var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
+            var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
 
-        comentariosList.insertBefore(comentarioItem, comentariosList.firstChild);
+            comentariosList.insertBefore(comentarioItem, comentariosList.firstChild);
 
-        document.getElementById("comentario-" + alumno + "-" + asignatura).value = "";
+            document.getElementById("comentario-" + alumno + "-" + asignatura).value = "";
 
-        mostrarComentarios(alumno, asignatura);
+            mostrarComentarios(alumno, asignatura);
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: "error",
+                title: "¡Error al guardar el comentario!",
+                text: "Ha ocurrido un error al guardar el comentario. Por favor, intenta nuevamente.",
+                confirmButtonColor: '#0988dc',
+            });
+            console.error("Error al guardar el comentario:", error);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        cargarComentariosGuardados();
+    });
+
+    function eliminarComentario(alumno, asignatura, contenidoComentario) {
+        Swal.fire({
+            title: '¿Eliminar comentario?',
+            text: '¿Estás seguro de que deseas eliminar este comentario?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch("/eliminar_comentario", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        alumno: alumno,
+                        asignatura: asignatura,
+                        contenidoComentario: contenidoComentario,
+                    }),
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        var comentarioItem = document.querySelector(`#comentarios-${alumno}-${asignatura} .comentario-item`);
+                        if (comentarioItem) {
+                            comentarioItem.parentNode.removeChild(comentarioItem);
+                        }
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Comentario eliminado',
+                            text: 'El comentario ha sido eliminado correctamente.',
+                            confirmButtonColor: '#0988dc'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al eliminar el comentario',
+                            text: 'Ha ocurrido un error al eliminar el comentario. Por favor, intenta nuevamente.',
+                            confirmButtonColor: '#0988dc'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al eliminar el comentario:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al eliminar el comentario',
+                        text: 'Ha ocurrido un error al eliminar el comentario. Por favor, intenta nuevamente.',
+                        confirmButtonColor: '#0988dc'
+                    });
+                });
+            }
+        });
+    }
+
+    function cargarComentariosGuardados() {
+        fetch("/obtener_comentarios")
+        .then(response => response.json())
+        .then(comentarios => {
+            comentarios.forEach(comentario => {
+                var alumno = comentario.alumno;
+                var asignatura = comentario.asignatura;
+                var contenidoComentario = comentario.comentario;
+
+                var comentarioItem = document.createElement("li");
+                comentarioItem.classList.add("comentario-item");
+                var comentarioContent = document.createElement("div");
+                comentarioContent.classList.add("comentario-content");
+                comentarioContent.textContent = contenidoComentario;
+
+                comentarioItem.appendChild(comentarioContent);
+
+                var comentariosList = document.getElementById("comentarios-" + alumno + "-" + asignatura);
+                comentariosList.appendChild(comentarioItem);
+            });
+        })
+        .catch(error => {
+            console.error("Error al cargar comentarios:", error);
+        });
     }
 
     function toggleComentarios(alumno, asignatura) {
@@ -314,7 +452,7 @@
             indicator.classList.add('indicator');
             
             if (i === currentSlide) {
-                indicator.classList.add('active'); // Agrega la clase 'active' al indicador actual
+                indicator.classList.add('active');
             }
             
             indicator.addEventListener('click', function (index) {
@@ -328,5 +466,19 @@
     }
 
     updateIndicators();
+
+    var scrollPosition = sessionStorage.getItem('scrollPosition');
+
+    if (scrollPosition) {
+        window.scrollTo(0, scrollPosition);
+    }
+
+    window.onload = function() {
+        document.body.style.display = "block";
+    };
+
+    window.onbeforeunload = function() {
+        sessionStorage.setItem('scrollPosition', window.scrollY);
+    };
 
 </script>

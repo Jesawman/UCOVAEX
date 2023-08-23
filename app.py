@@ -3,8 +3,8 @@ import sqlite3
 import threading
 import uuid
 
-from flask import (Flask, flash, redirect, render_template, request, session,
-                   url_for)
+from flask import (Flask, flash, jsonify, redirect, render_template, request,
+                   session, url_for)
 from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
 from jinja2 import Environment, FileSystemLoader
@@ -288,21 +288,6 @@ def enviar_solicitud():
 
     return redirect(url_for('solicitud'))
 
-@app.route('/comentarios', methods=['GET', 'POST'])
-@login_required
-def comentarios():
-    if request.method == 'POST':
-        with get_db() as conn:
-            c = conn.cursor()
-            c.execute("UPDATE solicitudes SET comentarios = ? WHERE id = ?", (request.form['comentarios'], request.form['_id']))
-            conn.commit()
-            flash('Comentarios guardados')
-            return redirect(url_for('comentarios'))
-    with get_db() as conn:
-        c = conn.cursor()
-        solicitudes = c.execute("SELECT * FROM solicitudes").fetchall()
-    return render_template('comentarios.html', solicitudes=solicitudes)
-
 @app.route('/administracion', methods=['GET', 'POST'])
 @login_required
 def administracion():
@@ -311,27 +296,50 @@ def administracion():
             with get_db() as conn:
                 c = conn.cursor()
                 c.execute('UPDATE solicitudes SET estado = ? WHERE id = ?',
-                            (request.form['estado'], request.form['_id']))
+                          (request.form['estado'], request.form['_id']))
                 conn.commit()
                 flash('Solicitud actualizada')
                 return redirect(url_for('administracion'))
         with get_db() as conn:
             c = conn.cursor()
 
-            c.execute('''
-                SELECT usuario, destino,MAX(fecha) AS fecha, estado
-                FROM relacion_asignaturas_alumnos
-                GROUP BY usuario
-                ORDER BY usuario ASC
-            ''')
-            solicitudes = c.fetchall()
+            if current_user.tipo == 'comision':
+                c.execute('SELECT comision FROM comisiones WHERE usuario = ?', (current_user.get_id(),))
+                comision_result = c.fetchone()
+                if comision_result:
+                    comision_usuario = comision_result[0]
+                else:
+                    comision_usuario = None
+
+                c.execute('''
+                    SELECT usuario, destino, MAX(fecha) AS fecha, estado
+                    FROM relacion_asignaturas_alumnos
+                    WHERE usuario IN (
+                        SELECT alumno
+                        FROM asignaciones
+                        WHERE usuario_comision = ?
+                        OR usuario_comision = ?
+                    )
+                    GROUP BY usuario
+                    ORDER BY usuario ASC
+                ''', (current_user.get_id(), comision_usuario))
+            else:
+                c.execute('''
+                    SELECT usuario, destino, MAX(fecha) AS fecha, estado
+                    FROM relacion_asignaturas_alumnos
+                    GROUP BY usuario
+                    ORDER BY usuario ASC
+                ''')
             
+            solicitudes = c.fetchall()
+
             return render_template('administracion.html', solicitudes=solicitudes)
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión con el usuario correcto.')
         return redirect(url_for('login'))
-    
+
+
 def obtener_url_asignatura(codigo_asignatura):
     connection = get_db()
     cursor = connection.cursor()
@@ -406,6 +414,30 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             destino = None
 
         cursor.execute("""
+            SELECT titulacion
+            FROM asignatura_eps
+            WHERE codigo IN (
+                SELECT codigo_eps
+                FROM relacion_asignaturas_alumnos
+                WHERE usuario = ?
+            )
+            LIMIT 1
+        """, (nombre_usuario,))
+        titulacion_result = cursor.fetchone()
+        if titulacion_result is not None:
+            titulacion = titulacion_result[0]
+        else:
+            titulacion = None
+
+
+        cursor.execute("""
+            SELECT id_solicitud, usuario_comision
+            FROM asignaciones
+            ORDER BY id_solicitud
+        """)
+        asignaciones = cursor.fetchall()
+
+        cursor.execute("""
             SELECT fecha
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
@@ -430,14 +462,31 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         for id in id_solicitud_aux:
             id_solicitud_aux = id[0]
             vector_id_solicitud.append(id_solicitud_aux)
-
-        cursor.execute("""
-            SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado, fecha
-            FROM relacion_asignaturas_alumnos
-            WHERE usuario = ?
-            ORDER BY id_solicitud, nombre_eps
-        """, (nombre_usuario,))
-        solicitudes = cursor.fetchall()
+        if current_user.tipo == 'comision':
+            cursor.execute("""
+                SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado, fecha
+                FROM relacion_asignaturas_alumnos
+                WHERE id_solicitud IN (
+                    SELECT id_solicitud
+                    FROM asignaciones
+                    WHERE usuario_comision = ?
+                    OR usuario_comision IN (
+                        SELECT comision
+                        FROM comisiones
+                        WHERE usuario = ?
+                    )
+                )
+                ORDER BY id_solicitud, nombre_eps
+            """, (current_user.get_id(), current_user.get_id()))
+            solicitudes = cursor.fetchall()
+        else:
+            cursor.execute("""
+                SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado, fecha
+                FROM relacion_asignaturas_alumnos
+                WHERE usuario = ?
+                ORDER BY id_solicitud, nombre_eps
+            """, (nombre_usuario,))
+            solicitudes = cursor.fetchall()
 
         cursor.execute("""
             SELECT tipo
@@ -449,8 +498,6 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             tipo_usuario = tipo_usuario_row[0]
         else:
             tipo_usuario = None
-        print("tipo_usuario:")
-        print(tipo_usuario)
 
         connection.close()
 
@@ -497,7 +544,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         elif alumno is None:
             return render_template('administracion.html')
 
-        return render_template('alumno_sol.html', alumno=alumno, destino=destino, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud, fechas=fechas)
+        return render_template('alumno_sol.html', alumno=alumno, destino=destino, titulacion=titulacion, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud, fechas=fechas, asignaciones=asignaciones)
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión como alumno.')
@@ -556,27 +603,74 @@ def enviar_comision():
 @app.route("/guardar_comentario", methods=["POST"])
 @login_required
 def guardar_comentario():
-    alumno = request.form.get("alumno")
-    asignatura = request.form.get("asignatura")
-    comentario = request.form.get("comentario")
+    data = request.json  
+    alumno = data.get("alumno")
+    asignatura = data.get("asignatura")
+    comentario = data.get("comentario")
 
     connection = get_db()
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO comentarios (alumno, asignatura, comentario) VALUES (?, ?, ?)",
-                   (alumno, asignatura, comentario))
-    connection.commit()
-    connection.close()
 
-    return "Comentario guardado correctamente"
+    try:
+        cursor.execute("INSERT INTO comentarios (alumno, asignatura, comentario) VALUES (?, ?, ?)",
+                       (alumno, asignatura, comentario))
+        connection.commit()
+        connection.close()
 
+        mensaje = "Comentario guardado correctamente"
+        response = {"success": True, "message": mensaje}
+        return jsonify(response)
+    except Exception as e:
+        mensaje = "Error al guardar el comentario: " + str(e)
+        response = {"success": False, "message": mensaje}
+        return jsonify(response), 500
+
+@app.route('/eliminar_comentario', methods=['POST'])
+def eliminar_comentario():
+    data = request.get_json()
+
+    alumno = data.get('alumno')
+    asignatura = data.get('asignatura')
+    contenido_comentario = data.get('contenidoComentario')
+
+    try:
+        connection = get_db()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            DELETE FROM comentarios
+            WHERE alumno = ? AND asignatura = ? AND contenido = ?
+        """, (alumno, asignatura, contenido_comentario))
+
+        connection.commit()
+        connection.close()
+
+        response = {'success': True}
+    except Exception as e:
+        print("Error al eliminar el comentario:", e)
+        response = {'success': False}
+
+    return jsonify(response)
+
+
+@app.route("/obtener_comentarios", methods=["GET"])
 def obtener_comentarios():
     connection = get_db()
     cursor = connection.cursor()
+
     cursor.execute("SELECT alumno, asignatura, comentario FROM comentarios")
     comentarios = cursor.fetchall()
     connection.close()
 
-    return comentarios
+    comentarios_list = []
+    for comentario in comentarios:
+        comentarios_list.append({
+            "alumno": comentario[0],
+            "asignatura": comentario[1],
+            "comentario": comentario[2]
+        })
+
+    return comentarios_list
 
 def query_db(query, args=(), one=False):
     conn = get_db()
