@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Base de Datos</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function toggleEdit(button) {
+            const row = button.closest('tr');
+            const inputs = row.querySelectorAll('input[type="text"]');
+            const actionCell = row.querySelector('.action-cell');
+
+            if (inputs[0].readOnly) {
+                inputs.forEach(input => {
+                    input.toggleAttribute('readonly');
+                });
+
+                const tickButton = document.createElement('button');
+                tickButton.innerHTML = '<i class="fas fa-check"></i>';
+                tickButton.className = "button tick-button";
+                tickButton.style.backgroundColor = "#28a745";
+                tickButton.type = "button";
+                tickButton.onclick = function() {
+                    const formData = new FormData();
+                    inputs.forEach(input => {
+                        formData.append(input.name, input.value);
+                    });
+
+                    const rowId = row.dataset.rowId;
+                    const table_name = "{{ selected_table }}";
+
+                    fetch(`/edit/${table_name}/${rowId}`, {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log('Cambios guardados exitosamente.');
+                        } else {
+                            console.error('Error al guardar los cambios.');
+                        }
+                        inputs.forEach(input => {
+                            input.toggleAttribute('readonly');
+                        });
+                        actionCell.innerHTML = '<button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>';
+                        actionCell.appendChild(deleteButton);
+                    }).catch(error => {
+                        console.error('Ocurrió un error:', error);
+                    });
+                };
+
+                const crossButton = document.createElement('button');
+                crossButton.innerHTML = '<i class="fas fa-times"></i>';
+                crossButton.className = "button cross-button";
+                crossButton.style.backgroundColor = "#dc3545";
+                crossButton.type = "button";
+                crossButton.onclick = function() {
+                    inputs.forEach(input => {
+                        input.value = input.defaultValue;
+                        input.toggleAttribute('readonly');
+                    });
+                    actionCell.innerHTML = '';
+                    actionCell.appendChild(editButton);
+                    actionCell.appendChild(deleteButton);
+                };
+
+                const editButton = document.createElement('button');
+                editButton.innerHTML = 'Editar';
+                editButton.className = 'button';
+                editButton.type = 'button';
+                editButton.style.backgroundColor = '#0988dc';
+                editButton.onclick = function() {
+                    toggleEdit(this);
+                };
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = 'Eliminar';
+                deleteButton.className = 'button';
+                deleteButton.type = 'button';
+                deleteButton.style.backgroundColor = '#dc3545';
+                deleteButton.onclick = function() {
+                    deleteRow(this);
+                };
+
+                actionCell.innerHTML = '';
+                actionCell.appendChild(tickButton);
+                actionCell.appendChild(crossButton);
+                actionCell.appendChild(deleteButton);
+            } else {
+                inputs.forEach(input => {
+                    input.toggleAttribute('readonly');
+                });
+                actionCell.innerHTML = '<button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>';
+                actionCell.appendChild(deleteButton);
+            }
+        }
+
+        
+        function showSelectedTable() {
+            const selectedTableName = document.getElementById("table_name").value;
+            window.location.href = "/database?table_name=" + encodeURIComponent(selectedTableName);
+        }
+
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            const rowId = row.dataset.rowId;
+            const table_name = "{{ selected_table }}";
+
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Esta acción eliminará la fila. No podrás deshacerla.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/delete/${table_name}/${rowId}`, {
+                        method: 'POST'
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log('Fila eliminada exitosamente.');
+                            row.remove();
+                        } else {
+                            console.error('Error al eliminar la fila.');
+                        }
+                    }).catch(error => {
+                        console.error('Ocurrió un error:', error);
+                    });
+                }
+            });
+        }
+
+        var scrollPosition = sessionStorage.getItem('scrollPosition');
+
+        if (scrollPosition) {
+            window.scrollTo(0, scrollPosition);
+        }
+
+        window.onload = function() {
+            document.body.style.display = "block";
+        };
+
+        window.onbeforeunload = function() {
+            sessionStorage.setItem('scrollPosition', window.scrollY);
+        };
+    </script>
+
+    <style>
+        .inner-header {
+            height: -1;
+            width: 100%;
+            margin: -3%;
+            padding: 5%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .button {
+            background-color: rgba(0, 172, 193, 1);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 0 10px 0 0;
+            border-radius: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .button:hover {
+            background-color: rgba(84, 58, 183, 1);
+            color: #fff;
+            text-decoration: none;
+            border: none;
+        }
+
+        .inner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inner-header h1 {
+            margin: 0;
+        }
+
+        .table-selector {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="inner-header">
+            <h1>UCOVAEX</h1>
+            <form action="{{ url_for('logout') }}" method="post">
+                <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
+                <button type="submit" class="button" style="font-size: 14px;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </form>
+        </div>
+        <div>
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                <defs>
+                    <path id="gentle-wave"
+                        d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+                </g>
+            </svg>
+        </div>
+    </div>
+    <div class="container">
+        <form action="{{ url_for('database') }}" method="post">
+            <div class="table-selector">
+                <label for="table_name">Seleccione una tabla:</label>
+                <select name="table_name" id="table_name" onchange="this.form.submit()">
+                    {% for table in tables %}
+                        {% if table[0] not in ['sqlite_sequence', 'comisiones'] %}
+                            <option value="{{ table[0] }}" {% if selected_table == table[0] %} selected {% endif %}>{{ table[0] }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>           
+            </div>
+        </form>
+        </div>
+        <div class="content flex">
+            <div id="selected_table">
+                {% if selected_table %}
+                    <h2>Tabla: {{ selected_table }}</h2>
+                    <div class="table-wrapper">
+                        <table class="fl-table">
+                            <thead>
+                                <tr>
+                                    {% for column in columns %}
+                                        <th>{{ column[1] }}</th>
+                                    {% endfor %}
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in rows %}
+                                    <tr data-row-id="{{ row.id }}">
+                                    {% for column in columns %}
+                                        <td><input type="text" name="col_{{ column[1] }}" value="{{ row[column[1]] }}" class="form-control" readonly required></td>
+                                    {% endfor %}
+                                        <td class="action-cell">
+                                            <button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>
+                                            <button class="button" type="button" onclick="deleteRow(this)" style="background-color: #dc3545;">Eliminar</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>                            
+                        </table>
+                    </div>
+                    <div class="add-row-form">
+                        <h3>Agregar Nueva Fila</h3>
+                        <form action="{{ url_for('add_row', table_name=selected_table) }}" method="post">
+                            {% for column in columns %}
+                                <label for="add_{{ column[1] }}">{{ column[1] }}:</label>
+                                <input type="text" name="add_{{ column[1] }}" id="add_{{ column[1] }}" required>
+                            {% endfor %}
+                            <button type="submit" class="button" style="background-color: #28a745;">Agregar</button>
+                        </form>
+                    </div>                
+                {% else %}
+                    <p>Selecciona una tabla para ver su contenido.</p>
+                {% endif %}
+            </div>
+            <div style="margin-top:10vh">‎ </div>
+        </div>
+    </div>
+</body>
+
+</html>

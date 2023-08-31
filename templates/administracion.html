@@ -60,11 +60,17 @@
 
 <body>
     <div class="header">
-            <div class="inner-header">
-                <h1>UCOVAEX</h1>
+        <div class="inner-header">
+            <h1>UCOVAEX</h1>
                 <form action="{{ url_for('logout') }}" method="post">
-                <a href="{{ url_for('register') }}" class="button">Agregar Usuario</a>
-                <button type="submit" class="button" style="font-size: 14px;">Cerrar sesión</button>
+                    {% if usuario_tipo != 'administrador' %}
+                        <a href="{{ url_for('register') }}" class="button">Agregar Usuario</a>
+                        <a href="{{ url_for('comisiones') }}" class="button">Comisiones</a>
+                        <a href="{{ url_for('database') }}" class="button">Base de Datos</a>
+                    {% endif %}
+                    <button type="submit" class="button" style="font-size: 14px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </form>
             </div>
             <div>
@@ -102,7 +108,7 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <table id="table" class="table"
+                <table id="table" class="fl-table"
                     data-toggle="table"
                     data-search="true"
                     data-filter-control="true"
@@ -112,7 +118,7 @@
                     <thead>
                         <tr>
                             <th data-field="usuario" data-filter-control="input" data-sortable="true">Nombre</th>
-                            <th data-field="nombre_destino" data-filter-control="input" data-sortable="true">Destino</th>
+                            <th data-field="destino" data-filter-control="input" data-sortable="true">Destino</th>
                             <th data-field="fecha" data-filter-control="input" data-sortable="true">Fecha</th>
                             <th data-field="estado" data-filter-control="input" data-sortable="true">Estado</th>
                         </tr>
@@ -121,7 +127,7 @@
                         {% for solicitud in solicitudes %}
                         <tr>
                             <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
-                            <td>{{ solicitud['nombre_destino'] }}</td>
+                            <td>{{ solicitud['destino'] }}</td>
                             <td>{{ solicitud['fecha'] }}</td>
                             <td>{{ solicitud['estado'] }}</td>
                         </tr>
@@ -132,40 +138,31 @@
         </div>
     </div>
     <script>
-        // Get the input field and table
         const input = document.getElementById("datatable-search-input");
         const table = document.getElementById("table");
 
-        // Add an event listener to the input field
         input.addEventListener("input", filterTable);
 
-        // Function to filter the table based on the input value
         function filterTable() {
-            // Get the input value
             const filterValue = input.value.toLowerCase();
 
-            // Get all the rows in the table body
             const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
 
-            // Loop through each row and hide/show based on the filter value
             for (let i = 0; i < rows.length; i++) {
                 const row = rows[i];
                 const columns = row.getElementsByTagName("td");
                 let foundMatch = false;
 
-                // Loop through each column in the row
                 for (let j = 0; j < columns.length; j++) {
                     const column = columns[j];
                     const cellValue = column.innerText.toLowerCase();
 
-                    // Check if the cell value contains the filter value
                     if (cellValue.includes(filterValue)) {
                         foundMatch = true;
                         break;
                     }
                 }
 
-                // Hide/show the row based on the filter value
                 if (foundMatch) {
                     row.style.display = "";
                 } else {

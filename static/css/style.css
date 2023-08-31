@@ -290,7 +290,66 @@
           .form-group.required select:invalid:focus {
             box-shadow: 0 0 5px red;
           }
+
+          .form-control {
+              width: 100%;
+              height: fit-content;
+              padding: 10px;
+              font-size: 16px;
+              color: #333;
+              border: 1px solid #ccc;
+              border-radius: 5px;
+              outline: none;
+              transition: border-color 0.3s ease;
+          }
           
+          .form-control:focus {
+                border-color: #ffffff;
+            }
+
+          .wrapper:hover #slide {
+              transition: 1s;
+              left: 0;
+          }
+
+          .slide {
+            display: none;
+            transform: translateX(-100%);
+            transition: transform 0.5s ease-in-out;
+          }
+  
+          .slide.active {
+            display: block;
+            transform: translateX(0);
+            transition: transform 0.5s ease-in-out;
+          }
+          .slider-controls {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin-top: 10vh;
+          }
+          
+          .slider-indicators {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 5px;
+              margin: 0;
+          }
+          
+          .indicator {
+              width: 10px;
+              height: 10px;
+              background-color: #ccc;
+              border-radius: 50%;
+              cursor: pointer;
+              transition: background-color 0.3s;
+          }
+          
+          .indicator.active {
+              background-color: #0988dc;
+          }
           .login-box {
             position: absolute;
             top: 50%;
@@ -346,7 +405,7 @@
             color: #ffffff;
             font-size: 12px;
         }
-
+      
         button {
         margin: 20px;
         }
@@ -505,7 +564,14 @@
             border-radius: 5px;
             position: relative;
         }
-    
+        
+        .opciones-eliminar {
+            display: inline-block;
+            margin-left: 10px;
+            color: red;
+            cursor: pointer;
+        }
+
         .comentario-content {
             display: inline-block;
             width: 90%;
@@ -517,7 +583,7 @@
             top: 5px;
             right: 5px;
         }
-    
+        
         .comentarios-section {
             height: 200px;
             overflow-y: auto;
@@ -545,7 +611,22 @@
           overflow: hidden;
       }
 
-     /* Mobile */
+      
+      .info-alumno {
+        background-color: #0988dc;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    
+      }
+      .info-alumno h5 {
+          margin: 0;
+          font-size: 18px;
+          color: #ffffff;
+          margin-bottom: 10px;
+      }
+      
 @media screen and (max-width: 576px) {
   header {
     padding: 5px;
@@ -588,6 +669,115 @@
   }
 
 }
+
+  .table-wrapper{
+    margin: 10px 70px 70px;
+    box-shadow: 0px 35px 50px rgba( 0, 0, 0, 0.2 );
+  }
+
+  .fl-table {
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: normal;
+    border: none;
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    background-color: white;
+  }
+
+  .fl-table td, .fl-table th {
+    text-align: center;
+    padding: 8px;
+  }
+
+  .fl-table td {
+    border-right: 1px solid #f8f8f8;
+    font-size: 14px;
+    font-family: 'Lato', sans-serif;
+  }
+
+  .fl-table thead th {
+    font-size: 16px;
+    color: #ffffff;
+    background: #0988dc;
+  }
+
+
+  .fl-table thead th:nth-child(odd) {
+    color: #ffffff;
+    background: #0988dc;
+  }
+
+  .fl-table tr:nth-child(even) {
+    background: #F8F8F8;
+  }
+
+  @media (max-width: 767px) {
+    .fl-table {
+        display: block;
+        width: 100%;
+    }
+    .table-wrapper:before{
+        content: "Scroll horizontally >";
+        display: block;
+        text-align: right;
+        font-size: 11px;
+        color: white;
+        padding: 0 0 10px;
+    }
+    .fl-table thead, .fl-table tbody, .fl-table thead th {
+        display: block;
+    }
+    .fl-table thead th:last-child{
+        border-bottom: none;
+    }
+    .fl-table thead {
+        float: left;
+    }
+    .fl-table tbody {
+        width: auto;
+        position: relative;
+        overflow-x: auto;
+    }
+    .fl-table td, .fl-table th {
+        padding: 20px .625em .625em .625em;
+        height: 60px;
+        vertical-align: middle;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        overflow-y: auto;
+        width: 120px;
+        font-size: 13px;
+        text-overflow: ellipsis;
+    }
+    .fl-table thead th {
+        text-align: left;
+        border-bottom: 1px solid #f7f7f9;
+    }
+    .fl-table tbody tr {
+        display: table-cell;
+    }
+    .fl-table tbody tr:nth-child(odd) {
+        background: none;
+    }
+    .fl-table tr:nth-child(even) {
+        background: transparent;
+    }
+    .fl-table tr td:nth-child(odd) {
+        background: #F8F8F8;
+        border-right: 1px solid #E6E4E4;
+    }
+    .fl-table tr td:nth-child(even) {
+        border-right: 1px solid #E6E4E4;
+    }
+    .fl-table tbody td {
+        display: block;
+        text-align: center;
+    }
+  }
+
 
 /* Tablet */
 @media screen and (min-width: 576px) and (max-width: 768px) {
