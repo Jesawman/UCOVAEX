@@ -379,7 +379,6 @@ def obtener_ects_asignatura(codigo_asignatura):
     connection.close()
     return ects
 
-
 @app.route('/usuario/<nombre_usuario>')
 @login_required
 def mostrar_solicitudes_usuario(nombre_usuario):
