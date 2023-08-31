@@ -241,7 +241,7 @@
                 <label for="table_name">Seleccione una tabla:</label>
                 <select name="table_name" id="table_name" onchange="this.form.submit()">
                     {% for table in tables %}
-                        {% if table[0] not in ['sqlite_sequence', 'comisiones'] %}
+                        {% if table[0] not in ['sqlite_sequence', 'comisiones', 'asignaciones'] %}
                             <option value="{{ table[0] }}" {% if selected_table == table[0] %} selected {% endif %}>{{ table[0] }}</option>
                         {% endif %}
                     {% endfor %}
