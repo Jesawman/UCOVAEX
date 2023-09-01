@@ -63,7 +63,7 @@
         <div class="inner-header">
             <h1>UCOVAEX</h1>
                 <form action="{{ url_for('logout') }}" method="post">
-                    {% if usuario_tipo != 'administrador' %}
+                    {% if usuario_tipo == 'administrador' %}
                         <a href="{{ url_for('register') }}" class="button">Agregar Usuario</a>
                         <a href="{{ url_for('comisiones') }}" class="button">Comisiones</a>
                         <a href="{{ url_for('database') }}" class="button">Base de Datos</a>

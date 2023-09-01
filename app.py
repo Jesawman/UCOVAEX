@@ -103,6 +103,8 @@ def login():
                         return redirect(url_for('administracion'))
                     elif login_user_dict[1] == 'administrador':
                         return redirect(url_for('administracion'))
+                    elif login_user_dict[1] == 'asistente':
+                        return redirect(url_for('administracion'))
                 else:
                     new_hash = generate_password_hash(request.form['password'])
                     c.execute("UPDATE usuarios SET password=? WHERE nombre_usuario=?", (new_hash, request.form['username']))
@@ -291,7 +293,7 @@ def enviar_solicitud():
 @app.route('/administracion', methods=['GET', 'POST'])
 @login_required
 def administracion():
-    if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision':
+    if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision' or current_user.tipo == 'asistente':
         if request.method == 'POST':
             with get_db() as conn:
                 c = conn.cursor()
@@ -333,7 +335,9 @@ def administracion():
             
             solicitudes = c.fetchall()
 
-            return render_template('administracion.html', solicitudes=solicitudes)
+            
+
+            return render_template('administracion.html', solicitudes=solicitudes, usuario_tipo=current_user.tipo)
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión con el usuario correcto.')
