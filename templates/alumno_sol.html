@@ -159,11 +159,25 @@
                                             {% endfor %}
                                         </td>
                                     {% endif %}
-                                    {% if loop.index == 1 and usuario_tipo == 'administrador' %}
-                                        <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                            <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
-                                            <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
-                                        </td>
+                                    {% if solicitud['estado'] == 'pendiente' %}
+                                        {% if loop.index == 1 and usuario_tipo == 'administrador' %}
+                                            <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                                <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
+                                                <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
+                                            </td>
+                                        {% endif %}
+                                    {% elif solicitud['estado'] == 'aprobado' %}
+                                        {% if loop.index == 1 %}
+                                            <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                                <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
+                                            </td>
+                                        {% endif %}
+                                    {% elif solicitud['estado'] == 'denegado' %}
+                                        {% if loop.index == 1 %}
+                                            <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                                <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
+                                            </td>
+                                        {% endif %}
                                     {% endif %}
                                 </tr>
                             {% endfor %}
@@ -439,7 +453,13 @@
         currentSlide = slideIndex;
     }
 
-    showSlide(currentSlide);
+    var storedSlide = sessionStorage.getItem('currentSlide');
+    if (storedSlide !== null) {
+        currentSlide = parseInt(storedSlide);
+        showSlide(currentSlide);
+    } else {
+        showSlide(currentSlide);
+    }
 
     function nextSlide() {
         showSlide(currentSlide + 1);
@@ -451,8 +471,6 @@
         updateIndicators();
     }
 
-    showSlide(currentSlide);
-
     function updateIndicators() {
         var indicatorsContainer = document.getElementById('slider-indicators');
         indicatorsContainer.innerHTML = '';
@@ -460,22 +478,28 @@
         for (var i = 0; i < slides.length; i++) {
             var indicator = document.createElement('div');
             indicator.classList.add('indicator');
-            
+
             if (i === currentSlide) {
                 indicator.classList.add('active');
             }
-            
+
             indicator.addEventListener('click', function (index) {
                 return function () {
                     showSlide(index);
                 };
             }(i));
-            
+
             indicatorsContainer.appendChild(indicator);
         }
     }
 
     updateIndicators();
+
+    function storeSlidePosition() {
+        sessionStorage.setItem('currentSlide', currentSlide.toString());
+    }
+
+    window.onbeforeunload = storeSlidePosition;
 
     var scrollPosition = sessionStorage.getItem('scrollPosition');
 
@@ -483,12 +507,13 @@
         window.scrollTo(0, scrollPosition);
     }
 
-    window.onload = function() {
+    window.onload = function () {
         document.body.style.display = "block";
     };
 
-    window.onbeforeunload = function() {
+    window.onbeforeunload = function () {
         sessionStorage.setItem('scrollPosition', window.scrollY);
+        storeSlidePosition();
     };
 
 </script>
