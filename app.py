@@ -444,7 +444,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             SELECT fecha
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY id_solicitud DESC
+            ORDER BY fecha, id_solicitud ASC
         """, (nombre_usuario,))
         fecha = cursor.fetchall()
 
@@ -457,7 +457,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             SELECT id_solicitud
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY id_solicitud DESC
+            ORDER BY fecha, id_solicitud ASC
         """, (nombre_usuario,))
         id_solicitud_aux = cursor.fetchall()
 
@@ -479,7 +479,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                         WHERE usuario = ?
                     )
                 )
-                ORDER BY id_solicitud, nombre_eps
+                ORDER BY fecha, id_solicitud ASC
             """, (current_user.get_id(), current_user.get_id()))
             solicitudes = cursor.fetchall()
         else:
@@ -487,7 +487,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado, fecha
                 FROM relacion_asignaturas_alumnos
                 WHERE usuario = ?
-                ORDER BY fecha ASC
+                ORDER BY fecha, id_solicitud ASC
             """, (nombre_usuario,))
             solicitudes = cursor.fetchall()
 
