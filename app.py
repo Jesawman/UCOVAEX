@@ -283,7 +283,7 @@ def enviar_solicitud():
                               (id_solicitud, current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
 
                 usuario_comision = usuario_comision_mapping.get(titulacion, 'comision_default')
-                c.execute("INSERT INTO asignaciones (id_solicitud, usuario_comision) VALUES (?, ?)",
+                c.execute("INSERT OR IGNORE INTO asignaciones (id_solicitud, usuario_comision) VALUES (?, ?)",
                           (id_solicitud, usuario_comision))
 
         conn.commit()
@@ -444,7 +444,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             SELECT fecha
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY id_solicitud, nombre_eps
+            ORDER BY id_solicitud DESC
         """, (nombre_usuario,))
         fecha = cursor.fetchall()
 
@@ -457,7 +457,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             SELECT id_solicitud
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY id_solicitud, nombre_eps
+            ORDER BY id_solicitud DESC
         """, (nombre_usuario,))
         id_solicitud_aux = cursor.fetchall()
 
@@ -487,7 +487,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado, fecha
                 FROM relacion_asignaturas_alumnos
                 WHERE usuario = ?
-                ORDER BY id_solicitud, nombre_eps
+                ORDER BY fecha ASC
             """, (nombre_usuario,))
             solicitudes = cursor.fetchall()
 

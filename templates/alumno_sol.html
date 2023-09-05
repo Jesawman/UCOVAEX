@@ -100,25 +100,17 @@
                     <h5>Con destino a {{ destino }}</h5>
                 </div>
             </div>
-            
             <div id="slider-container">
-                {% set solicitud_pasada = namespace(prev=vector_id_solicitud[0]) %}
-
+                {% set count = namespace(value=0) %}
                 {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
-                    {% set solicitud_actual = vector_id_solicitud[loop.index-1] %}
-                    {% if loop.index == 1 %}
-                    <div class="slide">
-                        <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
-                        {% for asignacion in asignaciones %}
-                        {% if asignacion[0] == solicitud_actual %}
-                            <center><h4>Asignada a {{ asignacion[1] }}</h4></center>
-                        {% endif %}
-                    {% endfor %}
-                    {% endif %}
-                    {% if solicitud_actual != solicitud_pasada.prev%}
+                    {% if loop.index0 == 0 %}
                     </div>
                     <div class="slide">
-                        <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
+                        <h2>Solicitud {{ fechas[count.value] }}</h2>
+                    {% elif vector_id_solicitud[count.value] != vector_id_solicitud[count.value -1] %}
+                    </div>
+                    <div class="slide">
+                        <h2>Solicitud {{ fechas[count.value] }}</h2>
                     {% endif %}
                     <table class="fl-table">
                         <thead>
@@ -139,6 +131,7 @@
                         </thead>
                         <tbody>
                             {% for solicitud in solicitudes_destino %}
+                            {% set count.value = count.value + 1 %}
                                 <tr>
                                     {% if loop.index == 1 %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['nombre_uco'] }}</td>
@@ -153,7 +146,7 @@
                                     {% if loop.index == 1 %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                             {% for asignacion in asignaciones %}
-                                                {% if asignacion[0] == solicitud_actual %}
+                                                {% if asignacion[0] == vector_id_solicitud[loop.index] %}
                                                     {{ asignacion[1] }}
                                                 {% endif %}
                                             {% endfor %}
@@ -167,13 +160,13 @@
                                             </td>
                                         {% endif %}
                                     {% elif solicitud['estado'] == 'aprobado' %}
-                                        {% if loop.index == 1 %}
+                                        {% if loop.index == 1 and usuario_tipo == 'administrador' %}
                                             <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                                 <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
                                             </td>
                                         {% endif %}
                                     {% elif solicitud['estado'] == 'denegado' %}
-                                        {% if loop.index == 1 %}
+                                        {% if loop.index == 1 and usuario_tipo == 'administrador' %}
                                             <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                                 <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
                                             </td>
@@ -219,7 +212,6 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% set solicitud_pasada.prev = vector_id_solicitud[loop.index-1] %}
                 {% endfor %}
             </div>
             <div class="slider-controls">
