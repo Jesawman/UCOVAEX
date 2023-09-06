@@ -518,6 +518,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
 
             if asignatura_uco in grupos_solicitudes:
                 grupos_solicitudes[asignatura_uco].append({
+                    'id_solicitud': id_solicitud,
                     'nombre_uco': nombre_eps,
                     'codigo_uco': codigo_eps,
                     'nombre_destino': nombre_destino,
@@ -531,6 +532,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 })
             else:
                 grupos_solicitudes[asignatura_uco] = [{
+                    'id_solicitud': id_solicitud,
                     'nombre_uco': nombre_eps,
                     'codigo_uco': codigo_eps,
                     'nombre_destino': nombre_destino,
