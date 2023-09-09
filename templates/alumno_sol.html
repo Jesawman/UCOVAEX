@@ -93,17 +93,17 @@
             </div>
         </div>
         <div class="container">
-            <div class="row">
-                <div class="info-alumno">
-                    <h5>Solicitudes de {{ alumno }}</h5>
-                    <h5>De {{ titulacion }}</h5>
-                    <h5>Con destino a {{ destino }}</h5>
-                </div>
-            </div>
             <div id="slider-container">
                 {% set count = namespace(value=0) %}
                 {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
                     {% if loop.index0 == 0 %}
+                    <div class="row">
+                        <div class="info-alumno">
+                            <h5>Solicitudes de {{ alumno }}</h5>
+                            <h5>De {{ titulacion }}</h5>
+                            <h5>Con destino a {{ destinos[vector_id_solicitud[count.value]] }}</h5>
+                        </div>
+                    </div>
                     </div>
                     <div class="slide">
                         <h2>Solicitud {{ fechas[count.value] }}</h2>
@@ -146,7 +146,7 @@
                                     {% if loop.index == 1 %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                             {% for asignacion in asignaciones %}
-                                                {% if asignacion[0] == vector_id_solicitud[loop.index] %}
+                                                {% if loop.index== 1 and asignacion[0] == vector_id_solicitud[loop.index] %}
                                                     {{ asignacion[1] }}
                                                 {% endif %}
                                             {% endfor %}
@@ -155,20 +155,20 @@
                                     {% if solicitud['estado'] == 'pendiente' %}
                                         {% if loop.index == 1 and usuario_tipo == 'administrador' %}
                                             <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                                <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
-                                                <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
+                                                <button type="button" class="btn btn-success" onclick="aprobarSolicitud({{ solicitud }})">Aprobar</button>
+                                                <button type="button" class="btn btn-danger" onclick="denegarSolicitud({{ solicitud }})">Denegar</button>
                                             </td>
                                         {% endif %}
                                     {% elif solicitud['estado'] == 'aprobado' %}
                                         {% if loop.index == 1 and usuario_tipo == 'administrador' %}
                                             <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                                <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
+                                                <button type="button" class="btn btn-danger" onclick="denegarSolicitud({{ solicitud }})">Denegar</button>
                                             </td>
                                         {% endif %}
                                     {% elif solicitud['estado'] == 'denegado' %}
                                         {% if loop.index == 1 and usuario_tipo == 'administrador' %}
                                             <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                                <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
+                                                <button type="button" class="btn btn-success" onclick="aprobarSolicitud({{ solicitud }})">Aprobar</button>
                                             </td>
                                         {% endif %}
                                     {% endif %}
@@ -224,33 +224,33 @@
 </html>
 
 <script>
-    function aprobarSolicitud(codigo_uco) {
+    function aprobarSolicitud(solicitud) {
         var form = document.createElement('form');
         form.method = 'POST';
         form.action = '/aprobar';
 
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'codigo_uco';
-        input.value = codigo_uco;
+        var inputSolicitud = document.createElement('input');
+        inputSolicitud.type = 'hidden';
+        inputSolicitud.name = 'solicitud';
+        inputSolicitud.value = JSON.stringify(solicitud);
 
-        form.appendChild(input);
+        form.appendChild(inputSolicitud);
 
         document.body.appendChild(form);
         form.submit();
     }
 
-    function denegarSolicitud(codigo_uco) {
+    function denegarSolicitud(solicitud) {
         var form = document.createElement('form');
         form.method = 'POST';
         form.action = '/denegar';
 
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'codigo_uco';
-        input.value = codigo_uco;
+        var inputSolicitud = document.createElement('input');
+        inputSolicitud.type = 'hidden';
+        inputSolicitud.name = 'solicitud';
+        inputSolicitud.value = JSON.stringify(solicitud);
 
-        form.appendChild(input);
+        form.appendChild(inputSolicitud);
 
         document.body.appendChild(form);
         form.submit();

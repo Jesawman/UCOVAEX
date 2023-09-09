@@ -124,6 +124,11 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if not solicitudes %}
+                        <tr>
+                            <td colspan="4">No hay actualmente solicitudes de alumnos.</td>
+                        </tr>
+                        {% else %}
                         {% for solicitud in solicitudes %}
                         <tr>
                             <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
@@ -132,6 +137,7 @@
                             <td>{{ solicitud['estado'] }}</td>
                         </tr>
                         {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
             </div>

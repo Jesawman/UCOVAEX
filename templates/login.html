@@ -14,6 +14,12 @@
         integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
         crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+    <style>
+    .btn-ancho {
+        width: 200px;
+    }</style>
 </head>
 
 <body>
@@ -59,9 +65,21 @@
                     Login
                 </button></center>
             </form>
+            <a href="{{ url_for('google.login') }}" class="custom-btn btn-1 btn-ancho">Google Login</a>
         </div>
     </div>
+    
 
 </body>
+
+
+<script>
+    function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        console.log('ID: ' + profile.getId());
+        console.log('Nombre: ' + profile.getName());
+        console.log('Imagen de perfil: ' + profile.getImageUrl());
+    }
+</script>
 
 </html>
