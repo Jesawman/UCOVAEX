@@ -146,7 +146,11 @@
                                     {% if loop.index == 1 %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                             {% for asignacion in asignaciones %}
+<<<<<<< HEAD
                                                 {% if loop.index== 1 and asignacion[0] == vector_id_solicitud[loop.index] %}
+=======
+                                                {% if asignacion[0] == solicitud['id_solicitud'] %}
+>>>>>>> 1096435121daccf8c5e704e3cf103eb422d8a447
                                                     {{ asignacion[1] }}
                                                 {% endif %}
                                             {% endfor %}
