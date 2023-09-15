@@ -64,8 +64,10 @@
 <body>
     <div class="header">
             <div class="inner-header">
-                <h1>UCOVAEX</h1>
-                <form action="{{ url_for('logout') }}" method="post">
+                <div class="logo">
+                    <img src="/static/images/SimboloEPSC.svg" alt="SimboloEPS">
+                    <h1>UCOVAEX</h1>
+                </div>                <form action="{{ url_for('logout') }}" method="post">
                     {% if usuario_tipo == 'alumno' %}
                         <a href="/solicitud" class="button" style="font-size: 14px;">Volver</a>
                     {% else %}
@@ -146,13 +148,9 @@
                                     {% if loop.index == 1 %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                             {% for asignacion in asignaciones %}
-<<<<<<< HEAD
-                                                {% if loop.index== 1 and asignacion[0] == vector_id_solicitud[loop.index] %}
-=======
-                                                {% if asignacion[0] == solicitud['id_solicitud'] %}
->>>>>>> 1096435121daccf8c5e704e3cf103eb422d8a447
-                                                    {{ asignacion[1] }}
-                                                {% endif %}
+                                                {% if asignacion[0] == vector_id_solicitud[count.value-1] %}
+                                                        {{ asignacion[1]}}
+                                                    {% endif %}
                                             {% endfor %}
                                         </td>
                                     {% endif %}

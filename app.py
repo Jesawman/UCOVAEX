@@ -313,8 +313,8 @@ def enviar_solicitud():
                               (id_solicitud, current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
 
                 usuario_comision = usuario_comision_mapping.get(titulacion, 'comision_default')
-                c.execute("INSERT OR IGNORE INTO asignaciones (id_solicitud, usuario_comision) VALUES (?, ?)",
-                          (id_solicitud, usuario_comision))
+                c.execute("INSERT OR IGNORE INTO asignaciones (id_solicitud, alumno, usuario_comision) VALUES (?, ?, ?)",
+                          (id_solicitud, current_user.get_id(),usuario_comision))
 
         conn.commit()
 

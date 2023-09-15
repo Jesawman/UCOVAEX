@@ -78,8 +78,10 @@
 <body>
     <div class="header">
         <div class="inner-header">
-            <h1>UCOVAEX</h1>
-            <form action="{{ url_for('logout') }}" method="post">
+            <div class="logo">
+                <img src="/static/images/SimboloEPSC.svg" alt="SimboloEPS">
+                <h1>UCOVAEX</h1>
+            </div>            <form action="{{ url_for('logout') }}" method="post">
                 <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
                 <button type="submit" class="button" style="font-size: 14px;">
                     <i class="fas fa-sign-out-alt"></i>
