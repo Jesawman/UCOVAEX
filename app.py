@@ -19,6 +19,9 @@ db = SQLAlchemy(app)
 app.secret_key = 'secretkey'
 logged_in = False
 
+google_bp = make_google_blueprint(client_id='705060421904-72q30fc6b0culnkbv983mkj4fbl3us3g.apps.googleusercontent.com', client_secret='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')
+app.register_blueprint(google_bp, url_prefix='/google_login')
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -59,6 +62,42 @@ def obtener_tipo_de_usuario(username):
     else:
         return "alumno"
 
+
+@app.route('/google-login')
+def google_login():
+    redirect_uri = url_for('auth', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/auth')
+def auth():
+    token = google.authorize_access_token()
+    user = google.parse_id_token(token)
+    
+    username_google = user['name']
+    
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM usuarios WHERE nombre_usuario=?", (username_google,))
+    existing_user = c.fetchone()
+
+    if existing_user is None:
+        tipo = "alumno"
+        hashpass = None
+        
+        c.execute("INSERT INTO usuarios (nombre_usuario, password, tipo) VALUES (?, ?, ?)", (username_google, hashpass, tipo))
+        conn.commit()
+        
+        user_obj = User(username_google, tipo="alumno")
+        login_user(user_obj)
+        
+    else:
+        tipo = existing_user['tipo']
+        user_obj = User(username_google, tipo)
+        login_user(user_obj)
+
+    conn.close()
+    
+    return redirect(url_for('index'))
 
 @app.route('/')
 def index():
@@ -119,31 +158,6 @@ def login():
                 flash('Usuario no encontrado')
                 return redirect(url_for('login'))
     return render_template('login.html')
-
-google_bp = make_google_blueprint(client_id='705060421904-72q30fc6b0culnkbv983mkj4fbl3us3g.apps.googleusercontent.com', client_secret='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')
-app.register_blueprint(google_bp, url_prefix='/google_login')
-
-@app.route('/google_login')
-def google_login():
-    if not google.authorized:
-        return redirect(url_for('google.login'))
-    
-    resp = google.get('/plus/v1/people/me')
-    assert resp.ok, resp.text
-
-    google_user_info = resp.json()
-    
-    existing_user = load_user(google_user_info['email'])
-
-    if existing_user:
-        login_user(existing_user)
-    else:
-        new_user = User(username=google_user_info['email'], tipo='alumno')
-        db.session.add(new_user)
-        db.session.commit()
-        login_user(new_user)
-
-    return redirect(url_for('solicitud'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
