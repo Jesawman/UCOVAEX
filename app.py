@@ -4,6 +4,7 @@ import sqlite3
 import threading
 import uuid
 
+from authlib.integrations.flask_client import OAuth
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    session, url_for)
 from flask_dance.contrib.google import google, make_google_blueprint
@@ -15,12 +16,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+oauth = OAuth(app)
 db = SQLAlchemy(app)
 app.secret_key = 'secretkey'
 logged_in = False
-
-google_bp = make_google_blueprint(client_id='705060421904-72q30fc6b0culnkbv983mkj4fbl3us3g.apps.googleusercontent.com', client_secret='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')
-app.register_blueprint(google_bp, url_prefix='/google_login')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -63,15 +62,31 @@ def obtener_tipo_de_usuario(username):
         return "alumno"
 
 
-@app.route('/google-login')
-def google_login():
-    redirect_uri = url_for('auth', _external=True)
-    return google.authorize_redirect(redirect_uri)
+@app.route('/google/')
+def google():
+    GOOGLE_CLIENT_ID = '705060421904-72q30fc6b0culnkbv983mkj4fbl3us3g.apps.googleusercontent.com'
+    GOOGLE_CLIENT_SECRET = client_secret='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'
 
-@app.route('/auth')
-def auth():
-    token = google.authorize_access_token()
-    user = google.parse_id_token(token)
+    CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+    oauth.register(
+        name='google',
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        server_metadata_url=CONF_URL,
+        client_kwargs={
+            'scope': 'openid email profile'
+        }
+    )
+
+    redirect_uri = url_for('google_auth', _external=True)
+    print(redirect_uri)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+
+@app.route('/google/auth/')
+def google_auth():
+    token = oauth.google.authorize_access_token()
+    user = oauth.google.parse_id_token(token)
     
     username_google = user['name']
     
