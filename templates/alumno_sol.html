@@ -15,8 +15,12 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    
+
     <style>
+        #lista-relaciones {
+            display: none;
+        }
+
         .inner-header {
                 height: -1;
                 width: 100%;
@@ -37,7 +41,7 @@
             text-decoration: none;
             font-size: 16px;
             margin: 0 10px 0 0;
-            border-radius: 20px; 
+            border-radius: 20px;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -49,15 +53,15 @@
         }
 
         .inner-header {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .inner-header h1 {
             margin: 0;
         }
-        
+
     </style>
 </head>
 
@@ -99,19 +103,26 @@
                 {% set count = namespace(value=0) %}
                 {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
                     {% if loop.index0 == 0 %}
-                    <div class="row">
-                        <div class="info-alumno">
-                            <h5>Solicitudes de {{ alumno }}</h5>
-                            <h5>De {{ titulacion }}</h5>
-                            <h5>Con destino a {{ destinos[vector_id_solicitud[count.value]] }}</h5>
-                        </div>
-                    </div>
                     </div>
                     <div class="slide">
+                        <div class="row">
+                            <div class="info-alumno">
+                                <h5>Solicitudes de {{ alumno }}</h5>
+                                <h5>De {{ titulacion }}</h5>
+                                <h5>Con destino a {{ destinos[count.value]}}</h5>
+                            </div>
+                        </div>
                         <h2>Solicitud {{ fechas[count.value] }}</h2>
                     {% elif vector_id_solicitud[count.value] != vector_id_solicitud[count.value -1] %}
                     </div>
                     <div class="slide">
+                        <div class="row">
+                            <div class="info-alumno">
+                                <h5>Solicitudes de {{ alumno }}</h5>
+                                <h5>De {{ titulacion }}</h5>
+                                <h5>Con destino a {{ destinos[count.value]}}</h5>
+                            </div>
+                        </div>
                         <h2>Solicitud {{ fechas[count.value] }}</h2>
                     {% endif %}
                     <table class="fl-table">
@@ -218,14 +229,31 @@
             </div>
             <div class="slider-controls">
                 <button class="button" style="font-size: 14px; background-color: #0988dc;" onclick="prevSlide()">Anterior</button>
-                <div id="slider-indicators" class="slider-indicators" onclick="updateIndicators()""></div>
-                <button class="button" style="font-size: 14px;margin-left: 10px ; background-color: #0988dc;" onclick="nextSlide()">Siguiente</button>
+                <div id="slider-indicators" class="slider-indicators" onclick="updateIndicators()"></div>
+                <button class="button" style="font-size: 14px; margin-left: 10px; background-color: #0988dc;" onclick="nextSlide()">Siguiente</button>
             </div>
+            {% if usuario_tipo == 'administrador' %}
+                <button style="background-color: #0988dc;" type="button" class="button" onclick="toggleLista()">Mostrar/Esconder Lista de ayuda</button>
+                <ul id="lista-relaciones">
+                    {% for relacion in relaciones %}
+                        <li>{{ relacion.nombre_eps }} -> {{ relacion.nombre_destino }} -> {{ relacion.estado }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
 </body>
 </html>
 
 <script>
+     function toggleLista() {
+        var lista = document.getElementById("lista-relaciones");
+        if (lista.style.display === "none") {
+            lista.style.display = "block";
+        } else {
+            lista.style.display = "none";
+        }
+    }
+
     function aprobarSolicitud(solicitud) {
         var form = document.createElement('form');
         form.method = 'POST';
@@ -351,7 +379,7 @@
                         if (comentarioItem) {
                             comentarioItem.parentNode.removeChild(comentarioItem);
                         }
-                        
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Comentario eliminado',

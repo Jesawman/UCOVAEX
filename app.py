@@ -1,28 +1,48 @@
 import datetime
 import json
+import os
 import sqlite3
 import threading
 import uuid
 
-from authlib.integrations.flask_client import OAuth
+from dotenv import load_dotenv
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    session, url_for)
-from flask_dance.contrib.google import google, make_google_blueprint
 from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
+from flask_oauthlib.client import OAuth
 from flask_sqlalchemy import SQLAlchemy
-from jinja2 import Environment, FileSystemLoader
 from werkzeug.security import check_password_hash, generate_password_hash
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-oauth = OAuth(app)
 db = SQLAlchemy(app)
-app.secret_key = 'secretkey'
+app.secret_key = os.getenv("APP_SECRET_KEY")
+
+oauth = OAuth(app)
+
+google = oauth.remote_app(
+    'google',
+    consumer_key=os.getenv("GOOGLE_CLIENT_ID"),
+    consumer_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    request_token_params={
+        'scope': 'email',
+    },
+    base_url='https://www.googleapis.com/oauth2/v1/',
+    request_token_url=None,
+    access_token_method='POST',
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+)
+
+
 logged_in = False
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
 
 class User:
     def __init__(self, username, tipo):
@@ -40,7 +60,7 @@ class User:
 
     def get_id(self):
         return self.username
-    
+
 @login_manager.user_loader
 def load_user(username):
     tipo = obtener_tipo_de_usuario(username)
@@ -60,59 +80,6 @@ def obtener_tipo_de_usuario(username):
         return result[0]
     else:
         return "alumno"
-
-
-@app.route('/google/')
-def google():
-    GOOGLE_CLIENT_ID = '705060421904-72q30fc6b0culnkbv983mkj4fbl3us3g.apps.googleusercontent.com'
-    GOOGLE_CLIENT_SECRET = client_secret='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'
-
-    CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
-    oauth.register(
-        name='google',
-        client_id=GOOGLE_CLIENT_ID,
-        client_secret=GOOGLE_CLIENT_SECRET,
-        server_metadata_url=CONF_URL,
-        client_kwargs={
-            'scope': 'openid email profile'
-        }
-    )
-
-    redirect_uri = url_for('google_auth', _external=True)
-    print(redirect_uri)
-    return oauth.google.authorize_redirect(redirect_uri)
-
-
-@app.route('/google/auth/')
-def google_auth():
-    token = oauth.google.authorize_access_token()
-    user = oauth.google.parse_id_token(token)
-    
-    username_google = user['name']
-    
-    conn = get_db()
-    c = conn.cursor()
-    c.execute("SELECT * FROM usuarios WHERE nombre_usuario=?", (username_google,))
-    existing_user = c.fetchone()
-
-    if existing_user is None:
-        tipo = "alumno"
-        hashpass = None
-        
-        c.execute("INSERT INTO usuarios (nombre_usuario, password, tipo) VALUES (?, ?, ?)", (username_google, hashpass, tipo))
-        conn.commit()
-        
-        user_obj = User(username_google, tipo="alumno")
-        login_user(user_obj)
-        
-    else:
-        tipo = existing_user['tipo']
-        user_obj = User(username_google, tipo)
-        login_user(user_obj)
-
-    conn.close()
-    
-    return redirect(url_for('index'))
 
 @app.route('/')
 def index():
@@ -174,6 +141,39 @@ def login():
                 return redirect(url_for('login'))
     return render_template('login.html')
 
+@app.route('/google-login')
+def google_login():
+    return google.authorize(callback=url_for('google_authorized', _external=True))
+
+@app.route('/google-login-callback')
+def google_authorized():
+    response = google.authorized_response()
+    if response is None or response.get('access_token') is None:
+        return 'Acceso denegado: razón={} error={}'.format(
+            request.args['error_reason'],
+            request.args['error_description']
+        )
+
+    session['google_token'] = (response['access_token'], '')
+    user_info = google.get('userinfo')
+
+    if user_info.data:
+        username = user_info.data['email']
+        hashpass = generate_password_hash(user_info.data['sub'])
+        tipo = 'alumno'
+
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("INSERT INTO usuarios (nombre_usuario, password, tipo) VALUES (?, ?, ?)", (username, hashpass, tipo))
+        conn.commit()
+        conn.close()
+
+    return redirect(url_for('solicitud'))
+
+@google.tokengetter
+def get_google_oauth_token():
+    return session.get('google_token')
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -190,19 +190,19 @@ def register():
             conn = get_db()
             c = conn.cursor()
             c.execute("INSERT INTO usuarios (nombre_usuario, password, tipo) VALUES (?, ?, ?)", (username, hashpass, tipo))
-            
+
             if tipo == 'comision':
                 c.execute("INSERT INTO comisiones (usuario, comision) VALUES (?, ?)", (username, 'no asignada'))
-                
+
             conn.commit()
             flash('Usuario registrado')
             conn.close()
             return redirect(url_for('administracion'))
-        
+
         conn.close()
         flash('El nombre de usuario ya existe')
         return redirect(url_for('register'))
-    
+
     return render_template('register.html')
 
 asignaturas = []
@@ -267,20 +267,20 @@ def get_nombre_asignatura_uco(codigo_asignatura_uco):
     cursor.execute('SELECT nombre_uco FROM asignaturas_uco WHERE codigo_asignatura_uco = ?',
                    (codigo_asignatura_uco,))
     asignatura_uco = cursor.fetchone()
-    
+
     if asignatura_uco:
         return asignatura_uco[0]
     else:
         return None
 app.jinja_env.globals.update(get_nombre_asignatura_uco=get_nombre_asignatura_uco)
-    
+
 def get_nombre_asignatura_exterior(codigo_asignatura_extranjero):
     conn = get_db();
     cursor = conn.cursor()
-    cursor.execute('SELECT nombre_extranjero FROM asignaturas_exterior WHERE codigo_asignatura_extranjero = ?', 
+    cursor.execute('SELECT nombre_extranjero FROM asignaturas_exterior WHERE codigo_asignatura_extranjero = ?',
                    (codigo_asignatura_extranjero,))
     asignatura_exterior = cursor.fetchone()
-    
+
     if asignatura_exterior:
         return asignatura_exterior[0]
     else:
@@ -391,10 +391,10 @@ def administracion():
                     GROUP BY usuario
                     ORDER BY usuario ASC
                 ''')
-            
+
             solicitudes = c.fetchall()
 
-            
+
 
             return render_template('administracion.html', solicitudes=solicitudes, usuario_tipo=current_user.tipo)
     else:
@@ -414,7 +414,7 @@ def obtener_url_asignatura(codigo_asignatura):
     """, (codigo_asignatura,))
     url_result = cursor.fetchone()
     url = url_result[0] if url_result else None
-    
+
     connection.close()
     return url
 
@@ -486,7 +486,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             SELECT fecha
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY fecha, id_solicitud ASC
+            ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
         """, (nombre_usuario,))
         fecha = cursor.fetchall()
 
@@ -499,7 +499,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             SELECT id_solicitud
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY fecha, id_solicitud ASC
+            ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
         """, (nombre_usuario,))
         id_solicitud_aux = cursor.fetchall()
 
@@ -521,7 +521,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                         WHERE usuario = ?
                     )
                 )
-                ORDER BY fecha, id_solicitud ASC
+                ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
             """, (current_user.get_id(), current_user.get_id()))
             solicitudes = cursor.fetchall()
         else:
@@ -529,7 +529,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado, fecha
                 FROM relacion_asignaturas_alumnos
                 WHERE usuario = ?
-                ORDER BY fecha, id_solicitud ASC
+                ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
             """, (nombre_usuario,))
             solicitudes = cursor.fetchall()
 
@@ -544,27 +544,35 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         else:
             tipo_usuario = None
 
-        destinos = {} 
-        
-        for solicitud in solicitudes:
-            id_solicitud = solicitud['id_solicitud']
-            cursor.execute("""
-                SELECT destino
-                FROM asignatura_eps
-                WHERE codigo IN (
-                    SELECT codigo_eps
-                    FROM relacion_asignaturas_alumnos
-                    WHERE usuario = ?
-                )
-                LIMIT 1
-            """, (nombre_usuario,))
-            destino_result = cursor.fetchone()
-            if destino_result is not None:
-                destino = destino_result[0]
-            else:
-                destino = None
+        destinos = []
 
-            destinos[id_solicitud] = destino
+        cursor.execute("""
+            SELECT destino
+            FROM relacion_asignaturas_alumnos
+            WHERE usuario = ?
+            ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
+        """, (nombre_usuario,))
+        destino_ = cursor.fetchall()
+
+        for d in destino_:
+            destino_ = d[0]
+            destinos.append(destino_)
+
+        cursor.execute("""
+            SELECT DISTINCT nombre_eps
+            FROM relacion_asignaturas_alumnos
+        """)
+        nombres_eps = cursor.fetchall()
+
+        relaciones = []
+
+        for nombre_eps in nombres_eps:
+            cursor.execute("""
+                SELECT nombre_eps, nombre_destino, estado
+                FROM relacion_asignaturas_alumnos
+                WHERE nombre_eps = ?
+            """, (nombre_eps[0],))
+            relaciones.extend(cursor.fetchall())
 
         connection.close()
 
@@ -613,12 +621,12 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         elif alumno is None:
             return render_template('administracion.html')
 
-        return render_template('alumno_sol.html', alumno=alumno, destinos=destinos, titulacion=titulacion, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud, fechas=fechas, asignaciones=asignaciones)
+        return render_template('alumno_sol.html', alumno=alumno, destinos=destinos, titulacion=titulacion, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud, fechas=fechas, asignaciones=asignaciones, relaciones=relaciones)
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión como alumno.')
         return redirect(url_for('login'))
-    
+
 @app.route('/aprobar', methods=['POST'])
 @login_required
 def aprobar_solicitud():
@@ -767,12 +775,12 @@ def database():
     if current_user.tipo == 'administrador':
         tables = query_db("SELECT name FROM sqlite_master WHERE type='table';")
         selected_table = request.form.get('table_name')
-        
+
         if selected_table:
             columns = query_db(f"PRAGMA table_info({selected_table});")
             rows = query_db(f"SELECT * FROM {selected_table};")
             return render_template('database.html', tables=tables, selected_table=selected_table, columns=columns, rows=rows)
-        
+
         return render_template('database.html', tables=tables, selected_table=None)
     else:
         logout_user()
@@ -831,31 +839,31 @@ def add_row(table_name):
 
         insert_query = "INSERT INTO comisiones (id, usuario, comision) VALUES (?, ?, ?)"
         cursor.execute(insert_query, (id, usuario, comision))
-        
+
         conn.commit()
         conn.close()
 
         return redirect(url_for('comisiones'))
-    
+
     else:
         columns = query_db(f"PRAGMA table_info({table_name});")
-        
+
         new_values = [request.form.get(f'add_{column[1]}') for column in columns]
         placeholders = ', '.join(['?' for _ in columns])
-        
+
         insert_query = f"INSERT INTO {table_name} VALUES ({placeholders})"
-        
+
         query_db(insert_query, new_values)
-            
+
         return redirect(url_for('database'))
 
 @app.route('/delete/<table_name>/<int:row_id>', methods=['POST'])
 @login_required
 def delete_row(table_name, row_id):
     delete_query = f"DELETE FROM {table_name} WHERE rowid = ?"
-    
+
     query_db(delete_query, [row_id])
-    
+
     return 'Fila eliminada', 200
 
 @app.route('/logout', methods=['POST'])
