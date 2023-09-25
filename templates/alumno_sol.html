@@ -15,8 +15,12 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    
+
     <style>
+        #lista-relaciones {
+            display: none;
+        }
+
         .inner-header {
                 height: -1;
                 width: 100%;
@@ -37,7 +41,7 @@
             text-decoration: none;
             font-size: 16px;
             margin: 0 10px 0 0;
-            border-radius: 20px; 
+            border-radius: 20px;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -49,23 +53,25 @@
         }
 
         .inner-header {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .inner-header h1 {
             margin: 0;
         }
-        
+
     </style>
 </head>
 
 <body>
     <div class="header">
             <div class="inner-header">
-                <h1>UCOVAEX</h1>
-                <form action="{{ url_for('logout') }}" method="post">
+                <div class="logo">
+                    <img src="/static/images/SimboloEPSC.svg" alt="SimboloEPS">
+                    <h1>UCOVAEX</h1>
+                </div>                <form action="{{ url_for('logout') }}" method="post">
                     {% if usuario_tipo == 'alumno' %}
                         <a href="/solicitud" class="button" style="font-size: 14px;">Volver</a>
                     {% else %}
@@ -93,32 +99,31 @@
             </div>
         </div>
         <div class="container">
-            <div class="row">
-                <div class="info-alumno">
-                    <h5>Solicitudes de {{ alumno }}</h5>
-                    <h5>De {{ titulacion }}</h5>
-                    <h5>Con destino a {{ destino }}</h5>
-                </div>
-            </div>
-            
             <div id="slider-container">
-                {% set solicitud_pasada = namespace(prev=vector_id_solicitud[0]) %}
-
+                {% set count = namespace(value=0) %}
                 {% for asignatura_uco, solicitudes_destino in grupos_solicitudes.items() %}
-                    {% set solicitud_actual = vector_id_solicitud[loop.index-1] %}
-                    {% if loop.index == 1 %}
-                    <div class="slide">
-                        <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
-                        {% for asignacion in asignaciones %}
-                        {% if asignacion[0] == solicitud_actual %}
-                            <center><h4>Asignada a {{ asignacion[1] }}</h4></center>
-                        {% endif %}
-                    {% endfor %}
-                    {% endif %}
-                    {% if solicitud_actual != solicitud_pasada.prev%}
+                    {% if loop.index0 == 0 %}
                     </div>
                     <div class="slide">
-                        <h2>Solicitud {{ fechas[loop.index-1] }}</h2>
+                        <div class="row">
+                            <div class="info-alumno">
+                                <h5>Solicitudes de {{ alumno }}</h5>
+                                <h5>De {{ titulacion }}</h5>
+                                <h5>Con destino a {{ destinos[count.value]}}</h5>
+                            </div>
+                        </div>
+                        <h2>Solicitud {{ fechas[count.value] }}</h2>
+                    {% elif vector_id_solicitud[count.value] != vector_id_solicitud[count.value -1] %}
+                    </div>
+                    <div class="slide">
+                        <div class="row">
+                            <div class="info-alumno">
+                                <h5>Solicitudes de {{ alumno }}</h5>
+                                <h5>De {{ titulacion }}</h5>
+                                <h5>Con destino a {{ destinos[count.value]}}</h5>
+                            </div>
+                        </div>
+                        <h2>Solicitud {{ fechas[count.value] }}</h2>
                     {% endif %}
                     <table class="fl-table">
                         <thead>
@@ -139,6 +144,7 @@
                         </thead>
                         <tbody>
                             {% for solicitud in solicitudes_destino %}
+                            {% set count.value = count.value + 1 %}
                                 <tr>
                                     {% if loop.index == 1 %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">{{ solicitud['nombre_uco'] }}</td>
@@ -153,17 +159,31 @@
                                     {% if loop.index == 1 %}
                                         <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
                                             {% for asignacion in asignaciones %}
-                                                {% if asignacion[0] == solicitud_actual %}
-                                                    {{ asignacion[1] }}
-                                                {% endif %}
+                                                {% if asignacion[0] == vector_id_solicitud[count.value-1] %}
+                                                        {{ asignacion[1]}}
+                                                    {% endif %}
                                             {% endfor %}
                                         </td>
                                     {% endif %}
-                                    {% if loop.index == 1 and usuario_tipo == 'administrador' %}
-                                        <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
-                                            <button type="button" class="btn btn-success" onclick="aprobarSolicitud('{{ solicitud['codigo_uco'] }}')">Aprobar</button>
-                                            <button type="button" class="btn btn-danger" onclick="denegarSolicitud('{{ solicitud['codigo_uco'] }}')">Denegar</button>
-                                        </td>
+                                    {% if solicitud['estado'] == 'pendiente' %}
+                                        {% if loop.index == 1 and usuario_tipo == 'administrador' %}
+                                            <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                                <button type="button" class="btn btn-success" onclick="aprobarSolicitud({{ solicitud }})">Aprobar</button>
+                                                <button type="button" class="btn btn-danger" onclick="denegarSolicitud({{ solicitud }})">Denegar</button>
+                                            </td>
+                                        {% endif %}
+                                    {% elif solicitud['estado'] == 'aprobado' %}
+                                        {% if loop.index == 1 and usuario_tipo == 'administrador' %}
+                                            <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                                <button type="button" class="btn btn-danger" onclick="denegarSolicitud({{ solicitud }})">Denegar</button>
+                                            </td>
+                                        {% endif %}
+                                    {% elif solicitud['estado'] == 'denegado' %}
+                                        {% if loop.index == 1 and usuario_tipo == 'administrador' %}
+                                            <td rowspan="{{ solicitudes_destino|length }}" class="align-middle">
+                                                <button type="button" class="btn btn-success" onclick="aprobarSolicitud({{ solicitud }})">Aprobar</button>
+                                            </td>
+                                        {% endif %}
                                     {% endif %}
                                 </tr>
                             {% endfor %}
@@ -205,46 +225,62 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% set solicitud_pasada.prev = vector_id_solicitud[loop.index-1] %}
                 {% endfor %}
             </div>
             <div class="slider-controls">
                 <button class="button" style="font-size: 14px; background-color: #0988dc;" onclick="prevSlide()">Anterior</button>
-                <div id="slider-indicators" class="slider-indicators" onclick="updateIndicators()""></div>
-                <button class="button" style="font-size: 14px;margin-left: 10px ; background-color: #0988dc;" onclick="nextSlide()">Siguiente</button>
+                <div id="slider-indicators" class="slider-indicators" onclick="updateIndicators()"></div>
+                <button class="button" style="font-size: 14px; margin-left: 10px; background-color: #0988dc;" onclick="nextSlide()">Siguiente</button>
             </div>
+            {% if usuario_tipo == 'administrador' %}
+                <button style="background-color: #0988dc;" type="button" class="button" onclick="toggleLista()">Mostrar/Esconder Lista de ayuda</button>
+                <ul id="lista-relaciones">
+                    {% for relacion in relaciones %}
+                        <li>{{ relacion.nombre_eps }} -> {{ relacion.nombre_destino }} -> {{ relacion.estado }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
 </body>
 </html>
 
 <script>
-    function aprobarSolicitud(codigo_uco) {
+     function toggleLista() {
+        var lista = document.getElementById("lista-relaciones");
+        if (lista.style.display === "none") {
+            lista.style.display = "block";
+        } else {
+            lista.style.display = "none";
+        }
+    }
+
+    function aprobarSolicitud(solicitud) {
         var form = document.createElement('form');
         form.method = 'POST';
         form.action = '/aprobar';
 
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'codigo_uco';
-        input.value = codigo_uco;
+        var inputSolicitud = document.createElement('input');
+        inputSolicitud.type = 'hidden';
+        inputSolicitud.name = 'solicitud';
+        inputSolicitud.value = JSON.stringify(solicitud);
 
-        form.appendChild(input);
+        form.appendChild(inputSolicitud);
 
         document.body.appendChild(form);
         form.submit();
     }
 
-    function denegarSolicitud(codigo_uco) {
+    function denegarSolicitud(solicitud) {
         var form = document.createElement('form');
         form.method = 'POST';
         form.action = '/denegar';
 
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'codigo_uco';
-        input.value = codigo_uco;
+        var inputSolicitud = document.createElement('input');
+        inputSolicitud.type = 'hidden';
+        inputSolicitud.name = 'solicitud';
+        inputSolicitud.value = JSON.stringify(solicitud);
 
-        form.appendChild(input);
+        form.appendChild(inputSolicitud);
 
         document.body.appendChild(form);
         form.submit();
@@ -343,7 +379,7 @@
                         if (comentarioItem) {
                             comentarioItem.parentNode.removeChild(comentarioItem);
                         }
-                        
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Comentario eliminado',
@@ -439,7 +475,13 @@
         currentSlide = slideIndex;
     }
 
-    showSlide(currentSlide);
+    var storedSlide = sessionStorage.getItem('currentSlide');
+    if (storedSlide !== null) {
+        currentSlide = parseInt(storedSlide);
+        showSlide(currentSlide);
+    } else {
+        showSlide(currentSlide);
+    }
 
     function nextSlide() {
         showSlide(currentSlide + 1);
@@ -451,8 +493,6 @@
         updateIndicators();
     }
 
-    showSlide(currentSlide);
-
     function updateIndicators() {
         var indicatorsContainer = document.getElementById('slider-indicators');
         indicatorsContainer.innerHTML = '';
@@ -460,22 +500,28 @@
         for (var i = 0; i < slides.length; i++) {
             var indicator = document.createElement('div');
             indicator.classList.add('indicator');
-            
+
             if (i === currentSlide) {
                 indicator.classList.add('active');
             }
-            
+
             indicator.addEventListener('click', function (index) {
                 return function () {
                     showSlide(index);
                 };
             }(i));
-            
+
             indicatorsContainer.appendChild(indicator);
         }
     }
 
     updateIndicators();
+
+    function storeSlidePosition() {
+        sessionStorage.setItem('currentSlide', currentSlide.toString());
+    }
+
+    window.onbeforeunload = storeSlidePosition;
 
     var scrollPosition = sessionStorage.getItem('scrollPosition');
 
@@ -483,12 +529,13 @@
         window.scrollTo(0, scrollPosition);
     }
 
-    window.onload = function() {
+    window.onload = function () {
         document.body.style.display = "block";
     };
 
-    window.onbeforeunload = function() {
+    window.onbeforeunload = function () {
         sessionStorage.setItem('scrollPosition', window.scrollY);
+        storeSlidePosition();
     };
 
 </script>

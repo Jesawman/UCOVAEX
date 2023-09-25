@@ -1,21 +1,48 @@
 import datetime
+import json
+import os
 import sqlite3
 import threading
 import uuid
 
+from dotenv import load_dotenv
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    session, url_for)
 from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
-from jinja2 import Environment, FileSystemLoader
+from flask_oauthlib.client import OAuth
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = 'secretkey'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+db = SQLAlchemy(app)
+app.secret_key = os.getenv("APP_SECRET_KEY")
+
+oauth = OAuth(app)
+
+google = oauth.remote_app(
+    'google',
+    consumer_key=os.getenv("GOOGLE_CLIENT_ID"),
+    consumer_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    request_token_params={
+        'scope': 'email',
+    },
+    base_url='https://www.googleapis.com/oauth2/v1/',
+    request_token_url=None,
+    access_token_method='POST',
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+)
+
+
 logged_in = False
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
 
 class User:
     def __init__(self, username, tipo):
@@ -33,7 +60,7 @@ class User:
 
     def get_id(self):
         return self.username
-    
+
 @login_manager.user_loader
 def load_user(username):
     tipo = obtener_tipo_de_usuario(username)
@@ -53,7 +80,6 @@ def obtener_tipo_de_usuario(username):
         return result[0]
     else:
         return "alumno"
-
 
 @app.route('/')
 def index():
@@ -103,6 +129,8 @@ def login():
                         return redirect(url_for('administracion'))
                     elif login_user_dict[1] == 'administrador':
                         return redirect(url_for('administracion'))
+                    elif login_user_dict[1] == 'asistente':
+                        return redirect(url_for('administracion'))
                 else:
                     new_hash = generate_password_hash(request.form['password'])
                     c.execute("UPDATE usuarios SET password=? WHERE nombre_usuario=?", (new_hash, request.form['username']))
@@ -112,6 +140,39 @@ def login():
                 flash('Usuario no encontrado')
                 return redirect(url_for('login'))
     return render_template('login.html')
+
+@app.route('/google-login')
+def google_login():
+    return google.authorize(callback=url_for('google_authorized', _external=True))
+
+@app.route('/google-login-callback')
+def google_authorized():
+    response = google.authorized_response()
+    if response is None or response.get('access_token') is None:
+        return 'Acceso denegado: razón={} error={}'.format(
+            request.args['error_reason'],
+            request.args['error_description']
+        )
+
+    session['google_token'] = (response['access_token'], '')
+    user_info = google.get('userinfo')
+
+    if user_info.data:
+        username = user_info.data['email']
+        hashpass = generate_password_hash(user_info.data['sub'])
+        tipo = 'alumno'
+
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("INSERT INTO usuarios (nombre_usuario, password, tipo) VALUES (?, ?, ?)", (username, hashpass, tipo))
+        conn.commit()
+        conn.close()
+
+    return redirect(url_for('solicitud'))
+
+@google.tokengetter
+def get_google_oauth_token():
+    return session.get('google_token')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -129,19 +190,19 @@ def register():
             conn = get_db()
             c = conn.cursor()
             c.execute("INSERT INTO usuarios (nombre_usuario, password, tipo) VALUES (?, ?, ?)", (username, hashpass, tipo))
-            
+
             if tipo == 'comision':
                 c.execute("INSERT INTO comisiones (usuario, comision) VALUES (?, ?)", (username, 'no asignada'))
-                
+
             conn.commit()
             flash('Usuario registrado')
             conn.close()
             return redirect(url_for('administracion'))
-        
+
         conn.close()
         flash('El nombre de usuario ya existe')
         return redirect(url_for('register'))
-    
+
     return render_template('register.html')
 
 asignaturas = []
@@ -206,20 +267,20 @@ def get_nombre_asignatura_uco(codigo_asignatura_uco):
     cursor.execute('SELECT nombre_uco FROM asignaturas_uco WHERE codigo_asignatura_uco = ?',
                    (codigo_asignatura_uco,))
     asignatura_uco = cursor.fetchone()
-    
+
     if asignatura_uco:
         return asignatura_uco[0]
     else:
         return None
 app.jinja_env.globals.update(get_nombre_asignatura_uco=get_nombre_asignatura_uco)
-    
+
 def get_nombre_asignatura_exterior(codigo_asignatura_extranjero):
     conn = get_db();
     cursor = conn.cursor()
-    cursor.execute('SELECT nombre_extranjero FROM asignaturas_exterior WHERE codigo_asignatura_extranjero = ?', 
+    cursor.execute('SELECT nombre_extranjero FROM asignaturas_exterior WHERE codigo_asignatura_extranjero = ?',
                    (codigo_asignatura_extranjero,))
     asignatura_exterior = cursor.fetchone()
-    
+
     if asignatura_exterior:
         return asignatura_exterior[0]
     else:
@@ -281,8 +342,8 @@ def enviar_solicitud():
                               (id_solicitud, current_user.get_id(), codigo_eps, nombre_eps, codigo_destino, nombre_destino, "pendiente", destino))
 
                 usuario_comision = usuario_comision_mapping.get(titulacion, 'comision_default')
-                c.execute("INSERT INTO asignaciones (id_solicitud, usuario_comision) VALUES (?, ?)",
-                          (id_solicitud, usuario_comision))
+                c.execute("INSERT OR IGNORE INTO asignaciones (id_solicitud, alumno, usuario_comision) VALUES (?, ?, ?)",
+                          (id_solicitud, current_user.get_id(),usuario_comision))
 
         conn.commit()
 
@@ -291,7 +352,7 @@ def enviar_solicitud():
 @app.route('/administracion', methods=['GET', 'POST'])
 @login_required
 def administracion():
-    if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision':
+    if current_user.tipo == 'administrador' or current_user.tipo == 'asistente' or current_user.tipo == 'comision' or current_user.tipo == 'asistente':
         if request.method == 'POST':
             with get_db() as conn:
                 c = conn.cursor()
@@ -319,7 +380,7 @@ def administracion():
                         FROM asignaciones
                         WHERE usuario_comision = ?
                         OR usuario_comision = ?
-                    )
+                    ) AND estado = 'pendiente'
                     GROUP BY usuario
                     ORDER BY usuario ASC
                 ''', (current_user.get_id(), comision_usuario))
@@ -330,10 +391,12 @@ def administracion():
                     GROUP BY usuario
                     ORDER BY usuario ASC
                 ''')
-            
+
             solicitudes = c.fetchall()
 
-            return render_template('administracion.html', solicitudes=solicitudes)
+
+
+            return render_template('administracion.html', solicitudes=solicitudes, usuario_tipo=current_user.tipo)
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión con el usuario correcto.')
@@ -351,7 +414,7 @@ def obtener_url_asignatura(codigo_asignatura):
     """, (codigo_asignatura,))
     url_result = cursor.fetchone()
     url = url_result[0] if url_result else None
-    
+
     connection.close()
     return url
 
@@ -397,22 +460,6 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         comentarios = obtener_comentarios()
 
         cursor.execute("""
-            SELECT destino
-            FROM asignatura_eps
-            WHERE codigo IN (
-                SELECT codigo_eps
-                FROM relacion_asignaturas_alumnos
-                WHERE usuario = ?
-            )
-            LIMIT 1
-        """, (nombre_usuario,))
-        destino_result = cursor.fetchone()
-        if destino_result is not None:
-            destino = destino_result[0]
-        else:
-            destino = None
-
-        cursor.execute("""
             SELECT titulacion
             FROM asignatura_eps
             WHERE codigo IN (
@@ -428,7 +475,6 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         else:
             titulacion = None
 
-
         cursor.execute("""
             SELECT id_solicitud, usuario_comision
             FROM asignaciones
@@ -440,7 +486,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             SELECT fecha
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY id_solicitud, nombre_eps
+            ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
         """, (nombre_usuario,))
         fecha = cursor.fetchall()
 
@@ -453,7 +499,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             SELECT id_solicitud
             FROM relacion_asignaturas_alumnos
             WHERE usuario = ?
-            ORDER BY id_solicitud, nombre_eps
+            ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
         """, (nombre_usuario,))
         id_solicitud_aux = cursor.fetchall()
 
@@ -475,7 +521,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                         WHERE usuario = ?
                     )
                 )
-                ORDER BY id_solicitud, nombre_eps
+                ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
             """, (current_user.get_id(), current_user.get_id()))
             solicitudes = cursor.fetchall()
         else:
@@ -483,7 +529,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 SELECT id_solicitud, nombre_eps, codigo_eps, nombre_destino, codigo_destino, estado, fecha
                 FROM relacion_asignaturas_alumnos
                 WHERE usuario = ?
-                ORDER BY id_solicitud, nombre_eps
+                ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
             """, (nombre_usuario,))
             solicitudes = cursor.fetchall()
 
@@ -497,6 +543,36 @@ def mostrar_solicitudes_usuario(nombre_usuario):
             tipo_usuario = tipo_usuario_row[0]
         else:
             tipo_usuario = None
+
+        destinos = []
+
+        cursor.execute("""
+            SELECT destino
+            FROM relacion_asignaturas_alumnos
+            WHERE usuario = ?
+            ORDER BY DATE(SUBSTR(fecha, 7, 4) || '-' || SUBSTR(fecha, 4, 2) || '-' || SUBSTR(fecha, 1, 2)) DESC
+        """, (nombre_usuario,))
+        destino_ = cursor.fetchall()
+
+        for d in destino_:
+            destino_ = d[0]
+            destinos.append(destino_)
+
+        cursor.execute("""
+            SELECT DISTINCT nombre_eps
+            FROM relacion_asignaturas_alumnos
+        """)
+        nombres_eps = cursor.fetchall()
+
+        relaciones = []
+
+        for nombre_eps in nombres_eps:
+            cursor.execute("""
+                SELECT nombre_eps, nombre_destino, estado
+                FROM relacion_asignaturas_alumnos
+                WHERE nombre_eps = ?
+            """, (nombre_eps[0],))
+            relaciones.extend(cursor.fetchall())
 
         connection.close()
 
@@ -514,6 +590,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
 
             if asignatura_uco in grupos_solicitudes:
                 grupos_solicitudes[asignatura_uco].append({
+                    'id_solicitud': id_solicitud,
                     'nombre_uco': nombre_eps,
                     'codigo_uco': codigo_eps,
                     'nombre_destino': nombre_destino,
@@ -527,6 +604,7 @@ def mostrar_solicitudes_usuario(nombre_usuario):
                 })
             else:
                 grupos_solicitudes[asignatura_uco] = [{
+                    'id_solicitud': id_solicitud,
                     'nombre_uco': nombre_eps,
                     'codigo_uco': codigo_eps,
                     'nombre_destino': nombre_destino,
@@ -543,66 +621,63 @@ def mostrar_solicitudes_usuario(nombre_usuario):
         elif alumno is None:
             return render_template('administracion.html')
 
-        return render_template('alumno_sol.html', alumno=alumno, destino=destino, titulacion=titulacion, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud, fechas=fechas, asignaciones=asignaciones)
+        return render_template('alumno_sol.html', alumno=alumno, destinos=destinos, titulacion=titulacion, grupos_solicitudes=grupos_solicitudes, usuario_tipo=tipo_usuario, comentarios=comentarios, vector_id_solicitud=vector_id_solicitud, fechas=fechas, asignaciones=asignaciones, relaciones=relaciones)
     else:
         logout_user()
         flash('Acceso denegado. Por favor, inicia sesión como alumno.')
         return redirect(url_for('login'))
-    
+
 @app.route('/aprobar', methods=['POST'])
 @login_required
 def aprobar_solicitud():
-    codigo_uco = request.form['codigo_uco']
+    solicitud = request.form['solicitud']
+    solicitud_dict = json.loads(solicitud)
+
+    id_solicitud = solicitud_dict.get('id_solicitud')
+    codigo_uco = solicitud_dict.get('codigo_uco')
+
+    if id_solicitud is None or codigo_uco is None:
+        return jsonify({'error': 'Reconocimiento incompleto'}), 400
 
     connection = get_db()
     cursor = connection.cursor()
 
-    cursor.execute("UPDATE relacion_asignaturas_alumnos SET estado = 'aprobado' WHERE codigo_eps = ?", (codigo_uco,))
+    cursor.execute("UPDATE relacion_asignaturas_alumnos SET estado = 'aprobado' WHERE id_solicitud = ? and codigo_eps = ?", (id_solicitud, codigo_uco))
     connection.commit()
 
     connection.close()
 
-    flash('Solicitud aprobada con éxito', 'success')
+    flash('Reconocimiento aprobado con éxito', 'success')
     return redirect(request.referrer)
 
 
 @app.route('/denegar', methods=['POST'])
 @login_required
 def denegar_solicitud():
-    codigo_uco = request.form['codigo_uco']
+    solicitud = request.form['solicitud']
+    solicitud_dict = json.loads(solicitud)
+
+    id_solicitud = solicitud_dict.get('id_solicitud')
+    codigo_uco = solicitud_dict.get('codigo_uco')
+
+    if id_solicitud is None or codigo_uco is None:
+        return jsonify({'error': 'Reconocimiento incompleto'}), 400
 
     connection = get_db()
     cursor = connection.cursor()
 
-    cursor.execute("UPDATE relacion_asignaturas_alumnos SET estado = 'denegado' WHERE codigo_eps = ?", (codigo_uco,))
+    cursor.execute("UPDATE relacion_asignaturas_alumnos SET estado = 'denegado' WHERE id_solicitud = ? and codigo_eps = ?", (id_solicitud, codigo_uco))
     connection.commit()
 
     connection.close()
 
-    flash('Solicitud denegada', 'danger')
-    return redirect(request.referrer)
-
-
-@app.route('/enviar', methods=['POST'])
-@login_required
-def enviar_comision():
-    codigo_uco = request.form['codigo_uco']
-
-    connection = get_db()
-    cursor = connection.cursor()
-
-    cursor.execute("UPDATE relacion_asignaturas_alumnos SET estado = 'enviada' WHERE codigo_eps = ?", (codigo_uco,))
-    connection.commit()
-
-    connection.close()
-
-    flash('Solicitud enviada', 'info')
+    flash('Reconocimiento denegado', 'success')
     return redirect(request.referrer)
 
 @app.route("/guardar_comentario", methods=["POST"])
 @login_required
 def guardar_comentario():
-    data = request.json  
+    data = request.json
     alumno = data.get("alumno")
     asignatura = data.get("asignatura")
     comentario = data.get("comentario")
@@ -683,24 +758,11 @@ def query_db(query, args=(), one=False):
 @login_required
 def comisiones():
     if current_user.tipo == 'administrador':
-        if request.method == 'POST':
-            conn = get_db()
-            cursor = conn.cursor()
-
-            comision = request.form.get('comision')
-            usuario = request.form.get('usuario')
-
-            cursor.execute("INSERT OR REPLACE INTO comisiones (usuario, comision) VALUES (?, ?);", (usuario, comision))
-            conn.commit()
-            conn.close()
-
-            flash('Comisión actualizada exitosamente.')
-
         connection = get_db()
         cursor = connection.cursor()
-        cursor.execute("SELECT usuario, comision FROM comisiones ORDER BY comision")
+        cursor.execute("SELECT id, usuario, comision FROM comisiones ORDER BY id")
         comisiones = cursor.fetchall()
-
+        connection.close()
         return render_template('comisiones.html', user=current_user, comisiones=comisiones)
     else:
         logout_user()
@@ -713,12 +775,12 @@ def database():
     if current_user.tipo == 'administrador':
         tables = query_db("SELECT name FROM sqlite_master WHERE type='table';")
         selected_table = request.form.get('table_name')
-        
+
         if selected_table:
             columns = query_db(f"PRAGMA table_info({selected_table});")
             rows = query_db(f"SELECT * FROM {selected_table};")
             return render_template('database.html', tables=tables, selected_table=selected_table, columns=columns, rows=rows)
-        
+
         return render_template('database.html', tables=tables, selected_table=None)
     else:
         logout_user()
@@ -728,42 +790,80 @@ def database():
 @app.route('/edit/<table_name>/<int:row_id>', methods=['POST'])
 @login_required
 def edit_row(table_name, row_id):
-    columns = query_db(f"PRAGMA table_info({table_name});")
+    referrer = request.referrer
+    if referrer and 'comisiones' in referrer:
+        id = request.form.get('id')
+        usuario = request.form.get('usuario')
+        comision = request.form.get('comision')
 
-    update_values = []
-    for column in columns[1:]:
-        value = request.form.get(f'col_{column[1]}')
-        update_values.append(value)
+        id = int(id) if id else None
 
-    update_values.append(row_id)
+        conn = get_db()
+        cursor = conn.cursor()
 
-    update_query = f"UPDATE {table_name} SET {', '.join([f'{column[1]}=?' for column in columns[1:]])} WHERE rowid = ?"
+        cursor.execute("UPDATE comisiones SET id = ?, usuario = ?, comision = ? WHERE rowid = ?", (id, usuario, comision, row_id))
+        conn.commit()
+        conn.close()
 
-    query_db(update_query, update_values)
+        return redirect(url_for('comisiones'))
 
-    return redirect(url_for('database'))
+    else:
+        columns = query_db(f"PRAGMA table_info({table_name});")
+
+        update_values = []
+        for column in columns[1:]:
+            value = request.form.get(f'col_{column[1]}')
+            update_values.append(value)
+
+        update_values.append(row_id)
+
+        print(row_id)
+
+        update_query = f"UPDATE {table_name} SET {', '.join([f'{column[1]}=?' for column in columns[1:]])} WHERE rowid = ?"
+
+        query_db(update_query, update_values)
+
+        return redirect(url_for('database'))
 
 @app.route('/add/<table_name>', methods=['POST'])
 @login_required
 def add_row(table_name):
-    columns = query_db(f"PRAGMA table_info({table_name});")
-    
-    new_values = [request.form.get(f'add_{column[1]}') for column in columns]
-    placeholders = ', '.join(['?' for _ in columns])
-    
-    insert_query = f"INSERT INTO {table_name} VALUES ({placeholders})"
-    
-    query_db(insert_query, new_values)
-    
-    return redirect(url_for('database'))
+    referrer = request.referrer
+    if referrer and 'comisiones' in referrer:
+        id = request.form.get('id')
+        usuario = request.form.get('usuario')
+        comision = request.form.get('comision')
+
+        conn = get_db()
+        cursor = conn.cursor()
+
+        insert_query = "INSERT INTO comisiones (id, usuario, comision) VALUES (?, ?, ?)"
+        cursor.execute(insert_query, (id, usuario, comision))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for('comisiones'))
+
+    else:
+        columns = query_db(f"PRAGMA table_info({table_name});")
+
+        new_values = [request.form.get(f'add_{column[1]}') for column in columns]
+        placeholders = ', '.join(['?' for _ in columns])
+
+        insert_query = f"INSERT INTO {table_name} VALUES ({placeholders})"
+
+        query_db(insert_query, new_values)
+
+        return redirect(url_for('database'))
 
 @app.route('/delete/<table_name>/<int:row_id>', methods=['POST'])
 @login_required
 def delete_row(table_name, row_id):
     delete_query = f"DELETE FROM {table_name} WHERE rowid = ?"
-    
+
     query_db(delete_query, [row_id])
-    
+
     return 'Fila eliminada', 200
 
 @app.route('/logout', methods=['POST'])

@@ -61,19 +61,21 @@
 <body>
     <div class="header">
         <div class="inner-header">
-            <h1>UCOVAEX</h1>
-                <form action="{{ url_for('logout') }}" method="post">
-                    {% if usuario_tipo != 'administrador' %}
-                        <a href="{{ url_for('register') }}" class="button">Agregar Usuario</a>
-                        <a href="{{ url_for('comisiones') }}" class="button">Comisiones</a>
-                        <a href="{{ url_for('database') }}" class="button">Base de Datos</a>
-                    {% endif %}
-                    <button type="submit" class="button" style="font-size: 14px;">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </form>
+            <div class="logo">
+                <img src="/static/images/SimboloEPSC.svg" alt="SimboloEPS">
+                <h1>UCOVAEX</h1>
             </div>
-            <div>
+            <form action="{{ url_for('logout') }}" method="post">
+                {% if usuario_tipo == 'administrador' %}
+                <a href="{{ url_for('register') }}" class="button">Agregar Usuario</a>
+                <a href="{{ url_for('comisiones') }}" class="button">Comisiones</a>
+                <a href="{{ url_for('database') }}" class="button">Base de Datos</a>
+                {% endif %}
+                <button type="submit" class="button" style="font-size: 14px;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </form>
+        </div>
                 <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                     viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
                     <defs>
@@ -124,6 +126,11 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if not solicitudes %}
+                        <tr>
+                            <td colspan="4">No hay actualmente solicitudes de alumnos.</td>
+                        </tr>
+                        {% else %}
                         {% for solicitud in solicitudes %}
                         <tr>
                             <td><a href="/usuario/{{ solicitud['usuario'] }}">{{ solicitud['usuario'] }}</a></td>
@@ -132,6 +139,7 @@
                             <td>{{ solicitud['estado'] }}</td>
                         </tr>
                         {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
             </div>

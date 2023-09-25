@@ -589,6 +589,18 @@
             overflow-y: auto;
         }
 
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            max-width: 100px;
+            height: 80px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+      
         .select {
           width: 100%;
           padding: 0.375rem 0.75rem;

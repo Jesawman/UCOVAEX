@@ -15,138 +15,136 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-    function toggleEdit(button) {
-        const row = button.closest('tr');
-        const inputs = row.querySelectorAll('input[type="text"], select');
-        const actionCell = row.querySelector('.action-cell');
+    <script>
+        function toggleEdit(button) {
+            const row = button.closest('tr');
+            const inputs = row.querySelectorAll('input[type="text"], select');
+            const actionCell = row.querySelector('.action-cell');
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = 'Eliminar';
+            deleteButton.className = 'button';
+            deleteButton.type = 'button';
+            deleteButton.style.backgroundColor = '#dc3545';
+            deleteButton.onclick = function() {
+                deleteRow(this);
+            };
 
-        if (inputs[0].readOnly) {
-            inputs.forEach(input => {
-                input.toggleAttribute('readonly');
-                input.toggleAttribute('disabled');
-            });
-
-            const tickButton = document.createElement('button');
-            tickButton.innerHTML = '<i class="fas fa-check"></i>';
-            tickButton.className = "button tick-button";
-            tickButton.style.backgroundColor = "#28a745";
-            tickButton.type = "button";
-            tickButton.onclick = function() {
-                const formData = new FormData();
+            if (inputs[0].readOnly) {
                 inputs.forEach(input => {
-                    formData.append(input.name, input.value);
+                    input.removeAttribute('readonly');
+                    input.removeAttribute('disabled');
                 });
 
-                const rowId = row.dataset.rowId;
-                const table_name = "comisiones";
-                
-                fetch(`/edit/${table_name}/${rowId}`, {
-                    method: 'POST',
-                    body: formData
-                }).then(response => {
-                    if (response.ok) {
-                        console.log('Cambios guardados exitosamente.');
-                    } else {
-                        console.error('Error al guardar los cambios.');
-                    }
+                const select = row.querySelector('select');
+                select.removeAttribute('disabled');
+
+                const tickButton = document.createElement('button');
+                tickButton.innerHTML = '<i class="fas fa-check"></i>';
+                tickButton.className = "button tick-button";
+                tickButton.style.backgroundColor = "#28a745";
+                tickButton.type = "button";
+                tickButton.onclick = function() {
+                    const formData = new FormData();
                     inputs.forEach(input => {
-                        input.toggleAttribute('readonly');
-                        input.toggleAttribute('disabled');
+                        formData.append(input.name, input.value);
                     });
-                    actionCell.innerHTML = '<button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>';
+
+                    const rowId = row.dataset.rowId;
+                    const table_name = "comisiones";
+
+                    fetch(`/edit/${table_name}/${rowId}`, {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log('Cambios guardados exitosamente.');
+                        } else {
+                            console.error('Error al guardar los cambios.');
+                        }
+                        inputs.forEach(input => {
+                            input.setAttribute('readonly', 'true');
+                            input.setAttribute('disabled', 'true');
+                        });
+                        actionCell.innerHTML = '<button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>';
+                        actionCell.appendChild(deleteButton);
+                    }).catch(error => {
+                        console.error('Ocurrió un error:', error);
+                    });
+                };
+
+                const crossButton = document.createElement('button');
+                crossButton.innerHTML = '<i class="fas fa-times"></i>';
+                crossButton.className = "button cross-button";
+                crossButton.style.backgroundColor = "#dc3545";
+                crossButton.type = "button";
+                crossButton.onclick = function() {
+                    inputs.forEach(input => {
+                        input.value = input.defaultValue;
+                        input.setAttribute('readonly', 'true');
+                        input.setAttribute('disabled', 'true');
+                    });
+                    actionCell.innerHTML = '';
+                    actionCell.appendChild(editButton);
                     actionCell.appendChild(deleteButton);
-                }).catch(error => {
-                    console.error('Ocurrió un error:', error);
-                });
-            };
+                };
 
-            const crossButton = document.createElement('button');
-            crossButton.innerHTML = '<i class="fas fa-times"></i>';
-            crossButton.className = "button cross-button";
-            crossButton.style.backgroundColor = "#dc3545";
-            crossButton.type = "button";
-            crossButton.onclick = function() {
-                inputs.forEach(input => {
-                    input.value = input.defaultValue;
-                    input.toggleAttribute('readonly');
-                    input.toggleAttribute('disabled');
-                });
+                const editButton = document.createElement('button');
+                editButton.innerHTML = 'Editar';
+                editButton.className = 'button';
+                editButton.type = 'button';
+                editButton.style.backgroundColor = '#0988dc';
+                editButton.onclick = function() {
+                    toggleEdit(this);
+                };
+
                 actionCell.innerHTML = '';
-                actionCell.appendChild(editButton);
+                actionCell.appendChild(tickButton);
+                actionCell.appendChild(crossButton);
                 actionCell.appendChild(deleteButton);
-            };
-
-            const editButton = document.createElement('button');
-            editButton.innerHTML = 'Editar';
-            editButton.className = 'button';
-            editButton.type = 'button';
-            editButton.style.backgroundColor = '#0988dc';
-            editButton.onclick = function() {
-                toggleEdit(this);
-            };
-
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = 'Eliminar';
-            deleteButton.className = 'button';
-            deleteButton.type = 'button';
-            deleteButton.style.backgroundColor = '#dc3545';
-            deleteButton.onclick = function() {
-                deleteRow(this);
-            };
-
-            actionCell.innerHTML = '';
-            actionCell.appendChild(tickButton);
-            actionCell.appendChild(crossButton);
-            actionCell.appendChild(deleteButton);
-        } else {
-            inputs.forEach(input => {
-                input.toggleAttribute('readonly');
-                input.toggleAttribute('disabled');
-            });
-            actionCell.innerHTML = '<button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>';
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = 'Eliminar';
-            deleteButton.className = 'button';
-            deleteButton.type = 'button';
-            deleteButton.style.backgroundColor = '#dc3545';
-            deleteButton.onclick = function() {
-                deleteRow(this);
-            };
-            actionCell.appendChild(deleteButton);
-        }
-    }
-
-    function deleteRow(button) {
-        const row = button.closest('tr');
-        const rowId = row.dataset.rowId;
-        const table_name = "comisiones";
-
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: 'Esta acción eliminará la fila. No podrás deshacerla.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/delete/${table_name}/${rowId}`, {
-                    method: 'POST'
-                }).then(response => {
-                    if (response.ok) {
-                        console.log('Fila eliminada exitosamente.');
-                        row.remove();
-                    } else {
-                        console.error('Error al eliminar la fila.');
-                    }
-                }).catch(error => {
-                    console.error('Ocurrió un error:', error);
+            } else {
+                inputs.forEach(input => {
+                    input.setAttribute('readonly', 'true');
+                    input.setAttribute('disabled', 'true');
                 });
+
+                const select = row.querySelector('select');
+                select.setAttribute('disabled', 'true');
+
+                actionCell.innerHTML = '<button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>';
+                actionCell.appendChild(deleteButton);
             }
-        });
-    }
-</script>
+        }
+
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            const rowId = row.dataset.rowId;
+            const table_name = "comisiones";
+
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Esta acción eliminará la fila. No podrás deshacerla.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/delete/${table_name}/${rowId}`, {
+                        method: 'POST'
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log('Fila eliminada exitosamente.');
+                            row.remove();
+                        } else {
+                            console.error('Error al eliminar la fila.');
+                        }
+                    }).catch(error => {
+                        console.error('Ocurrió un error:', error);
+                    });
+                }
+            });
+        }
+    </script>
 
     <style>
         .inner-header {
@@ -203,8 +201,10 @@
 <body>
     <div class="header">
         <div class="inner-header">
-            <h1>UCOVAEX</h1>
-            <form action="{{ url_for('logout') }}" method="post">
+            <div class="logo">
+                <img src="/static/images/SimboloEPSC.svg" alt="SimboloEPS">
+                <h1>UCOVAEX</h1>
+            </div>            <form action="{{ url_for('logout') }}" method="post">
                 <a href="/administracion" class="button" style="font-size: 14px;">Volver</a>
                 <button type="submit" class="button" style="font-size: 14px;">
                     <i class="fas fa-sign-out-alt"></i>
@@ -235,6 +235,7 @@
                     <table class="fl-table">
                         <thead>
                             <tr>
+                                <th>Id</th>
                                 <th>Usuario</th>
                                 <th>Comisión Asignada</th>
                                 <th>Acción</th>
@@ -242,10 +243,11 @@
                         </thead>
                         <tbody>
                             {% for row in comisiones %}
-                                <tr data-row-id="{{ loop.index }}">
-                                    <td><input type="text" name="Usuario" value="{{  row.usuario }}" class="form-control" readonly required></td>
+                            <tr data-row-id="{{ row.id }}">
+                                    <td><input type="text" name="id" value="{{  row.id }}" class="form-control" readonly required></td>
+                                    <td><input type="text" name="usuario" value="{{  row.usuario }}" class="form-control" readonly required></td>
                                     <td>
-                                        <select name="comision" class="form-control" value="{{  row.comision}}" readonly required>
+                                        <select name="comision" class="form-control" value="{{  row.comision}}" readonly required disabled>
                                             <option value="comision_gii" {% if row.comision == 'comision_gii' %} selected {% endif %}>Comisión GII</option>
                                             <option value="comision_gie" {% if row.comision == 'comision_gie' %} selected {% endif %}>Comisión GIE</option>
                                             <option value="comision_gim" {% if row.comision == 'comision_gim' %} selected {% endif %}>Comisión GIM</option>
@@ -256,6 +258,7 @@
                                     </td>
                                     <td class="action-cell">
                                         <button class="button" type="button" onclick="toggleEdit(this)" style="background-color: #0988dc;">Editar</button>
+                                        <button class="button" type="button" onclick="deleteRow(this)" style="background-color: #dc3545;">Eliminar</button>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -265,6 +268,8 @@
                 <div class="add-row-form">
                     <h3>Agregar Nueva Fila</h3>
                     <form action="{{ url_for('add_row', table_name='comisiones') }}" method="post">
+                        <label for="usuario">Id:</label>
+                        <input type="text" name="id" id="id" required>
                         <label for="usuario">Usuario:</label>
                         <input type="text" name="usuario" id="usuario" required>
                         <label for="comision">Comisión Asignada:</label>

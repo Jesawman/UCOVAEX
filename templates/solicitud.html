@@ -408,6 +408,11 @@
         </script>
         
         <style>
+            #solicitudes-table td:nth-child(1) {
+                word-wrap: break-word;
+                white-space: normal;
+            }
+            
             .inner-fl-table {
                 width: 100%;
                 border-collapse: collapse;
@@ -505,8 +510,10 @@
     <body>
         <div class="header">
             <div class="inner-header">
-                <h1>UCOVAEX</h1>
-                <div style="display: flex; align-items: center;">
+                <div class="logo">
+                    <img src="/static/images/SimboloEPSC.svg" alt="SimboloEPS">
+                    <h1>UCOVAEX</h1>
+                </div>                <div style="display: flex; align-items: center;">
                     <a href="{{ url_for('mostrar_solicitudes_usuario', nombre_usuario=current_user.username) }}" class="button" style="margin-right: 10px;">Mostrar solicitudes</a>
                     <form action="{{ url_for('logout') }}" method="post">
                         <button type="submit" class="button" style="font-size: 14px;">
